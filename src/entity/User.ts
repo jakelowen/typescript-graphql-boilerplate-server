@@ -1,5 +1,4 @@
-import { Entity, Column, BeforeInsert, BaseEntity, PrimaryGeneratedColumn } from "typeorm";
-import * as uuidv4 from "uuid/v4"
+import { Entity, Column, BaseEntity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity("users")
 export class User extends BaseEntity {
