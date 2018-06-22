@@ -1,3 +1,4 @@
+/* eslint-disable */
 require("ts-node/register");
 
 // if you want to reference other typescript modules do it via require:
