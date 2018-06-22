@@ -7,6 +7,7 @@
     "@types/ioredis": "^3.2.9",
     "@types/jest": "^23.1.1",
     "@types/node": "^10.3.4",
+    "@types/node-fetch": "^2.1.1",
     "@types/uuid": "^3.4.3",
     "@types/yup": "^0.24.7",
     "gql2ts": "^1.8.0",
@@ -26,6 +27,7 @@
     "graphql-tools": "^3.0.2",
     "graphql-yoga": "^1.14.8",
     "ioredis": "^3.2.2",
+    "node-fetch": "^2.1.2",
     "pg": "^7.4.3",
     "reflect-metadata": "^0.1.12",
     "typeorm": "0.2.7",
@@ -37,7 +39,7 @@
     "test-server": "NODE_ENV=test ts-node src/index.ts",
     "gen-schema-types": "gql2ts src/schema.graphql -o src/types/schema.d.ts",
     "psql": "psql -U postgres graphql-ts-server-boilerplate",
-    "test": "NODE_ENV=test jest --forceExit"
+    "test": "NODE_ENV=test jest --forceExit --watch"
   },
   "jest": {
     "globalSetup": "./src/testSetup/callSetup.js",
