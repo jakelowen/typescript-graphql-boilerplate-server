@@ -22,6 +22,7 @@ column: number;
 
 interface IQuery {
 __typename: "Query";
+dummy2: string | null;
 dummy1: string | null;
 hello: string;
 }
@@ -32,7 +33,13 @@ name?: string | null;
 
 interface IMutation {
 __typename: "Mutation";
+login: Array<IError>;
 register: Array<IError>;
+}
+
+interface ILoginOnMutationArguments {
+email: string;
+password: string;
 }
 
 interface IRegisterOnMutationArguments {
