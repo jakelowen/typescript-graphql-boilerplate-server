@@ -40,9 +40,13 @@ const meQuery = `
 `;
 
 describe("me", () => {
-  // test("cant get user if not logged in", async () => {
-  //   //later
-  // });
+  test("return null if no cookie", async () => {
+    const response = await axios.post(process.env.TEST_HOST as string, {
+      query: loginMutation(email, password)
+    });
+
+    expect(response.data.data.me).toBeUndefined();
+  });
 
   test("get current user", async () => {
     await axios.post(

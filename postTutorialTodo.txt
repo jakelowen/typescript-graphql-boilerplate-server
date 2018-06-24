@@ -1,0 +1,2 @@
+// add logging library middleware
+// move logic out of resovlers.
