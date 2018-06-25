@@ -11,10 +11,15 @@ import { genSchema } from "./utils/generateSchema";
 import { redisSessionPrefix } from "./constants";
 import * as RateLimit from "express-rate-limit";
 import * as RateLimitRedisStore from "rate-limit-redis";
+import { createTestConn } from "./testUtils/createTestConn";
 
 const RedisStore = connectRedis(session);
 
 export const startServer = async () => {
+  if (process.env.NODE_ENV === "test") {
+    redis.flushall();
+  }
+
   const server = new GraphQLServer({
     schema: genSchema(),
     context: ({ request }) => ({
@@ -64,7 +69,12 @@ export const startServer = async () => {
 
   server.express.get("/confirm/:id", confirmEmail);
 
-  await createTypeormConn();
+  if (process.env.NODE_ENV === "test") {
+    await createTestConn(true);
+  } else {
+    await createTypeormConn();
+  }
+
   const app = await server.start({
     cors,
     port: process.env.NODE_ENV === "test" ? 0 : 4000
