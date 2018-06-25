@@ -4,6 +4,8 @@ import { User } from "../../entity/User";
 import { TestClient } from "../../utils/TestClient";
 import { createForgotPasswordLink } from "../../utils/createForgotPasswordLink";
 import * as Redis from "ioredis";
+import { passwordNotLongEnough } from "../register/errorMessages";
+import { expiredKeyError } from "./errorMessages";
 
 let conn: Connection;
 let userId: string;
@@ -32,11 +34,39 @@ describe("forgot password", () => {
     const url = await createForgotPasswordLink("", userId, redis);
     const parts = url.split("/");
     const key = parts[parts.length - 1];
-    const response = await client.forgotPasswordChange(newPassword, key);
-    expect(response.data).toEqual({
-      forgotPasswordChange: null
+
+    // skipping weird lock account stuff.
+
+    // try changing password thats too short
+    expect(await client.forgotPasswordChange("aa", key)).toEqual({
+      data: {
+        forgotPasswordChange: [
+          {
+            path: "newPassword",
+            message: passwordNotLongEnough
+          }
+        ]
+      }
     });
 
+    // now change password
+    expect(await client.forgotPasswordChange(newPassword, key)).toEqual({
+      data: { forgotPasswordChange: null }
+    });
+
+    // make sure redis key expires after password change
+    expect(await client.forgotPasswordChange("lotsagibberish", key)).toEqual({
+      data: {
+        forgotPasswordChange: [
+          {
+            path: "key",
+            message: expiredKeyError
+          }
+        ]
+      }
+    });
+
+    // successfully log in with new password
     expect(await client.login(email, newPassword)).toEqual({
       data: {
         login: null

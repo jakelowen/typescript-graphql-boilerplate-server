@@ -1,43 +1,72 @@
 import { ResolverMap } from "../../types/graphql-utils";
-// import * as bcrypt from "bcryptjs";
-// import { User } from "../../entity/User";
-// import { userSessionIdPrefix } from "../../constants";
-// import { formatYupError } from "../../utils/formatYupError";
+import { createForgotPasswordLink } from "../../utils/createForgotPasswordLink";
+import { User } from "../../entity/User";
+import { forgotPasswordPrefix } from "../../constants";
+import { expiredKeyError } from "./errorMessages";
+import * as yup from "yup";
+import { registerPasswordValidation } from "../../yupSchemas";
+import { formatYupError } from "../../utils/formatYupError";
+import * as bcrypt from "bcryptjs";
 
-// const errorResponse = [
-//   {
-//     path: "email",
-//     message: invalidLogin
-//   }
-// ];
+const schema = yup.object().shape({
+  newPassword: registerPasswordValidation
+});
 
 export const resolvers: ResolverMap = {
-  Query: {
-    dummy3: () => "dummy3"
-  },
+  Query: { dummy3: () => "dummy3" },
   Mutation: {
-    // login: async (
-    //   _,
-    //   { email, password }: GQL.ILoginOnMutationArguments,
-    //   { session, redis, req }
-    // ) => {
-    //   const user = await User.findOne({ where: { email } });
-    //   if (!user) {
-    //     return errorResponse;
-    //   }
-    //   if (!user.confirmed) {
-    //     return [{ path: "email", message: confirmEmailError }];
-    //   }
-    //   const valid = await bcrypt.compare(password, user.password);
-    //   if (!valid) {
-    //     return errorResponse;
-    //   }
-    //   // login successful
-    //   session.userId = user.id;
-    //   if (req.sessionID) {
-    //     await redis.lpush(`${userSessionIdPrefix}${user.id}`, req.sessionID);
-    //   }
-    //   return null;
-    // }
+    sendForgotPasswordEmail: async (
+      _,
+      { email }: GQL.ISendForgotPasswordEmailOnMutationArguments,
+      { redis }
+    ) => {
+      const user = await User.findOne({ where: { email } });
+      if (!user) {
+        return false;
+      }
+      await createForgotPasswordLink(
+        process.env.FRONTEND_HOST as string,
+        user.id,
+        redis
+      );
+      // @todo send email with link
+
+      return true;
+    },
+    forgotPasswordChange: async (
+      _,
+      { newPassword, key }: GQL.IForgotPasswordChangeOnMutationArguments,
+      { redis }
+    ) => {
+      const redisKey = `${forgotPasswordPrefix}${key}`;
+      const userId = await redis.get(redisKey);
+      // check if found that key is valid
+      if (!userId) {
+        return [{ path: "key", message: expiredKeyError }];
+      }
+
+      // check that new password is valid
+      try {
+        await schema.validate({ newPassword }, { abortEarly: false });
+      } catch (err) {
+        return formatYupError(err);
+      }
+
+      //  update user
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      const userUpdatePromise = User.update(
+        { id: userId },
+        {
+          password: hashedPassword
+        }
+      );
+
+      const delRedisKeyPromise = redis.del(redisKey);
+
+      await Promise.all([userUpdatePromise, delRedisKeyPromise]);
+
+      return null;
+    }
   }
 };
