@@ -25,7 +25,6 @@ export const resolvers: ResolverMap = {
             console.log(err);
           }
         });
-        // console.log(foo);
       }
       return false;
     }

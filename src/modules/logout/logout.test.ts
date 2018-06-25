@@ -8,10 +8,6 @@ let userId: string;
 const email = "bob5@bob.com";
 const password = "fdsafasdsa";
 
-/*
-HEY JAKE. YOU JUST FINISHED REFACTORING THIS TEST AT MINUTE 10 of PART 20 video. Now remove this comment and move on to next test refactor.
-*/
-
 beforeAll(async () => {
   conn = await createTypeormConn();
   const user = await User.create({
