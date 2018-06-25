@@ -9,6 +9,8 @@ import { createTypeormConn } from "./utils/createTypeormConn";
 import { confirmEmail } from "./routes/confirmEmail";
 import { genSchema } from "./utils/generateSchema";
 import { redisSessionPrefix } from "./constants";
+import * as RateLimit from "express-rate-limit";
+import * as RateLimitRedisStore from "rate-limit-redis";
 
 const RedisStore = connectRedis(session);
 
@@ -22,6 +24,17 @@ export const startServer = async () => {
       req: request
     })
   });
+
+  server.express.use(
+    new RateLimit({
+      store: new RateLimitRedisStore({
+        client: redis
+      }),
+      windowMs: 15 * 60 * 1000, // 15 mins
+      max: 100, // limit each ip to 100 requests per windowMs
+      delayMs: 0 // disable delaying - full speed until max limit is reached
+    })
+  );
 
   server.express.use(
     session({
