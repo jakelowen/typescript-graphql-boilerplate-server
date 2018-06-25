@@ -1,6 +1,3 @@
-import { request } from "graphql-request";
-// import { host } from './constants'
-// import { createConnection } from 'typeorm';
 import { User } from "../../entity/User";
 import {
   duplicateEmail,
@@ -14,15 +11,6 @@ import { TestClient } from "../../utils/TestClient";
 
 const email = "bob@bob.com";
 const password = "jalksdf";
-
-const mutation = (e: string, p: string) => `
-mutation {
-  register(email: "${e}", password: "${p}") {
-    path
-    message
-  }
-}
-`;
 
 let conn: Connection;
 beforeAll(async () => {
