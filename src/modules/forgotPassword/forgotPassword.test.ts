@@ -37,6 +37,7 @@ describe("forgot password", () => {
     const key = parts[parts.length - 1];
 
     // skipping weird lock account stuff.
+    // expect("account locking").toEqual(false);
 
     // try changing password thats too short
     expect(await client.forgotPasswordChange("aa", key)).toEqual({
