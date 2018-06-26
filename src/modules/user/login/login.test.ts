@@ -1,10 +1,11 @@
 import { invalidLogin, confirmEmailError } from "./errorMessages";
-import { User } from "../../entity/User";
-import { createTestConn } from "../../testUtils/createTestConn";
+import { User } from "../../../entity/User";
+import { createTestConn } from "../../../testUtils/createTestConn";
 import { Connection } from "typeorm";
-import { TestClient } from "../../utils/TestClient";
+import { TestClient } from "../../../utils/TestClient";
 import * as faker from "faker";
 
+faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
 const password = faker.internet.password();
 
@@ -21,6 +22,7 @@ const loginExpectError = async (
 };
 
 let conn: Connection;
+
 beforeAll(async () => {
   conn = await createTestConn();
 });

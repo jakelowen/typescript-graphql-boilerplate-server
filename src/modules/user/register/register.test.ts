@@ -1,19 +1,21 @@
-import { User } from "../../entity/User";
+import { User } from "../../../entity/User";
 import {
   duplicateEmail,
   emailNotLongEnough,
   invalidEmail,
   passwordNotLongEnough
 } from "./errorMessages";
-import { createTestConn } from "../../testUtils/createTestConn";
+import { createTestConn } from "../../../testUtils/createTestConn";
 import { Connection } from "typeorm";
-import { TestClient } from "../../utils/TestClient";
+import { TestClient } from "../../../utils/TestClient";
 import * as faker from "faker";
 
+faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
 const password = faker.internet.password();
 
 let conn: Connection;
+
 beforeAll(async () => {
   conn = await createTestConn();
 });

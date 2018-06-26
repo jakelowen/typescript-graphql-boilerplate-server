@@ -1,7 +1,3 @@
-type Query {
-  dummy3: String
-}
-
 type Mutation {
   logout: Boolean
 }

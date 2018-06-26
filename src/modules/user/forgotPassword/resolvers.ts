@@ -1,11 +1,11 @@
-import { ResolverMap } from "../../types/graphql-utils";
-import { createForgotPasswordLink } from "../../utils/createForgotPasswordLink";
-import { User } from "../../entity/User";
-import { forgotPasswordPrefix } from "../../constants";
+import { ResolverMap } from "../../../types/graphql-utils";
+import { createForgotPasswordLink } from "../../../utils/createForgotPasswordLink";
+import { User } from "../../../entity/User";
+import { forgotPasswordPrefix } from "../../../constants";
 import { expiredKeyError } from "./errorMessages";
 import * as yup from "yup";
-import { registerPasswordValidation } from "../../yupSchemas";
-import { formatYupError } from "../../utils/formatYupError";
+import { registerPasswordValidation } from "../../../yupSchemas";
+import { formatYupError } from "../../../utils/formatYupError";
 import * as bcrypt from "bcryptjs";
 
 const schema = yup.object().shape({
@@ -13,7 +13,6 @@ const schema = yup.object().shape({
 });
 
 export const resolvers: ResolverMap = {
-  Query: { dummy3: () => "dummy3" },
   Mutation: {
     sendForgotPasswordEmail: async (
       _,

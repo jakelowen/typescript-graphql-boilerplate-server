@@ -1,8 +1,8 @@
-import { ResolverMap } from "../../types/graphql-utils";
+import { ResolverMap } from "../../../types/graphql-utils";
 import * as bcrypt from "bcryptjs";
-import { User } from "../../entity/User";
+import { User } from "../../../entity/User";
 import { invalidLogin, confirmEmailError } from "./errorMessages";
-import { userSessionIdPrefix } from "../../constants";
+import { userSessionIdPrefix } from "../../../constants";
 // import { formatYupError } from "../../utils/formatYupError";
 
 const errorResponse = [
@@ -13,9 +13,6 @@ const errorResponse = [
 ];
 
 export const resolvers: ResolverMap = {
-  Query: {
-    dummy2: () => "dummy1"
-  },
   Mutation: {
     login: async (
       _,
