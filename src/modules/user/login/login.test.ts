@@ -1,9 +1,10 @@
+import * as faker from "faker";
+import { Connection } from "typeorm";
+
 import { invalidLogin, confirmEmailError } from "./errorMessages";
 import { User } from "../../../entity/User";
 import { createTestConn } from "../../../testUtils/createTestConn";
-import { Connection } from "typeorm";
 import { TestClient } from "../../../utils/TestClient";
-import * as faker from "faker";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();

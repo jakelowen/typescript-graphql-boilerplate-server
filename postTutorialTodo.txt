@@ -1,4 +1,5 @@
 // add logging library middleware
 // move logic out of resovlers.
+// expire user sessions lists, also think more about 1 day default expiration of sessions
 
 // understand difference between typescript types vs interfaces

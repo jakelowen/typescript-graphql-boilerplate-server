@@ -1,9 +1,9 @@
-import { ResolverMap } from "../../../types/graphql-utils";
 import * as bcrypt from "bcryptjs";
+
+import { ResolverMap } from "../../../types/graphql-utils";
 import { User } from "../../../entity/User";
 import { invalidLogin, confirmEmailError } from "./errorMessages";
-import { userSessionIdPrefix } from "../../../constants";
-// import { formatYupError } from "../../utils/formatYupError";
+import { userSessionIdPrefix, redisSessionKeyTTL } from "../../../constants";
 
 const errorResponse = [
   {
@@ -38,7 +38,11 @@ export const resolvers: ResolverMap = {
       // login successful
       session.userId = user.id;
       if (req.sessionID) {
-        await redis.lpush(`${userSessionIdPrefix}${user.id}`, req.sessionID);
+        await redis
+          .multi()
+          .lpush(`${userSessionIdPrefix}${user.id}`, req.sessionID)
+          .expire(`${userSessionIdPrefix}${user.id}`, redisSessionKeyTTL)
+          .exec();
       }
 
       return null;

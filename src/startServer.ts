@@ -3,14 +3,14 @@ import "dotenv/config";
 import { GraphQLServer } from "graphql-yoga";
 import * as session from "express-session";
 import * as connectRedis from "connect-redis";
+import * as RateLimitRedisStore from "rate-limit-redis";
+import * as RateLimit from "express-rate-limit";
 
 import { redis } from "./redis";
 import { createTypeormConn } from "./utils/createTypeormConn";
 import { confirmEmail } from "./routes/confirmEmail";
 import { genSchema } from "./utils/generateSchema";
-import { redisSessionPrefix } from "./constants";
-import * as RateLimit from "express-rate-limit";
-import * as RateLimitRedisStore from "rate-limit-redis";
+import { redisSessionPrefix, redisSessionKeyTTL } from "./constants";
 import { createTestConn } from "./testUtils/createTestConn";
 
 const RedisStore = connectRedis(session);
@@ -45,7 +45,8 @@ export const startServer = async () => {
     session({
       store: new RedisStore({
         client: redis as any,
-        prefix: redisSessionPrefix
+        prefix: redisSessionPrefix,
+        ttl: redisSessionKeyTTL
       }),
       name: "qid",
       secret: process.env.SESSION_SECRET as string,
