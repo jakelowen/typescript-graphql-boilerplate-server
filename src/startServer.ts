@@ -45,8 +45,7 @@ export const startServer = async () => {
     session({
       store: new RedisStore({
         client: redis as any,
-        prefix: redisSessionPrefix,
-        ttl: redisSessionKeyTTL
+        prefix: redisSessionPrefix
       }),
       name: "qid",
       secret: process.env.SESSION_SECRET as string,
@@ -55,7 +54,7 @@ export const startServer = async () => {
       cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
+        maxAge: redisSessionKeyTTL
       }
     })
   );
