@@ -1,4 +1,5 @@
 import { Redis } from "ioredis";
+import { RedisPubSub } from "graphql-redis-subscriptions";
 
 export interface Session extends Express.Session {
   userId?: string;
@@ -9,6 +10,7 @@ export interface Context {
   url: string;
   session: Session;
   req: Express.Request;
+  pubsub: RedisPubSub;
 }
 
 export type Resolver = (
