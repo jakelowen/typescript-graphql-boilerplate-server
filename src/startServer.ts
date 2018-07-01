@@ -4,8 +4,8 @@ import "reflect-metadata";
 import "dotenv/config";
 import { GraphQLServer } from "graphql-yoga";
 import { RedisPubSub } from "graphql-redis-subscriptions";
-import * as session from "express-session";
-import * as connectRedis from "connect-redis";
+// import * as session from "express-session";
+// import * as connectRedis from "connect-redis";
 import * as RateLimitRedisStore from "rate-limit-redis";
 import * as RateLimit from "express-rate-limit";
 import * as Redis from "ioredis";
@@ -14,9 +14,10 @@ import { redis } from "./redis";
 import { createTypeormConn } from "./utils/createTypeormConn";
 import { confirmEmail } from "./routes/confirmEmail";
 import { genSchema } from "./utils/generateSchema";
-import { redisSessionPrefix, redisSessionKeyTTL } from "./constants";
+// import { redisSessionPrefix, redisSessionKeyTTL } from "./constants";
 import { createTestConn } from "./testUtils/createTestConn";
-import { Session } from "./types/graphql-utils";
+import * as jwt from "express-jwt";
+// import { Session } from "./types/graphql-utils";
 
 const pubsub = new RedisPubSub({
   publisher: new Redis(),
@@ -24,25 +25,15 @@ const pubsub = new RedisPubSub({
 });
 
 // redis store for sessions
-const RedisStore = connectRedis(session);
+// const RedisStore = connectRedis(session);
 
-// pull out sessionParser for use in both queries and subscriptions
-const sessionParser = session({
-  store: new RedisStore({
-    client: redis as any,
-    prefix: redisSessionPrefix
-  }),
-  name: "qid",
-  secret: process.env.SESSION_SECRET as string,
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: redisSessionKeyTTL
-  }
+// auth middleware
+const auth = jwt({
+  secret: process.env.JWT_SECRET as string,
+  credentialsRequired: false
 });
 
+// pull out sessionParser for use in both queries and subscriptions
 export const startServer = async () => {
   if (process.env.NODE_ENV === "test") {
     redis.flushall();
@@ -50,7 +41,7 @@ export const startServer = async () => {
 
   const server = new GraphQLServer({
     schema: genSchema(),
-    context: ({ request, connection }) => {
+    context: ({ request, connection }: { request: any; connection: any }) => {
       // return a special context in case of subscription
       if (connection && !request) {
         return {
@@ -60,16 +51,18 @@ export const startServer = async () => {
         };
       }
       // else return the normal conext
+      // console.log(request);
       return {
         redis,
         url: request.protocol + "://" + request.get("host"),
-        session: request.session,
+        // session: request.session,
+        user: request.user,
         req: request,
         pubsub
       };
       // }
     }
-  });
+  } as any);
 
   server.express.use(
     new RateLimit({
@@ -82,7 +75,25 @@ export const startServer = async () => {
     })
   );
 
-  server.express.use(sessionParser);
+  // server.express.use(
+  //   session({
+  //     store: new RedisStore({
+  //       client: redis as any,
+  //       prefix: redisSessionPrefix
+  //     }),
+  //     name: "qid",
+  //     secret: process.env.SESSION_SECRET as string,
+  //     resave: false,
+  //     saveUninitialized: false,
+  //     cookie: {
+  //       httpOnly: true,
+  //       secure: process.env.NODE_ENV === "production",
+  //       maxAge: redisSessionKeyTTL
+  //     }
+  //   })
+  // );
+
+  server.express.use(auth);
 
   const cors = {
     credentials: true,
@@ -105,22 +116,31 @@ export const startServer = async () => {
     port: process.env.NODE_ENV === "test" ? 0 : 4000,
     subscriptions: {
       path: "/",
-      onConnect: async (_: any, webSocket: any) => {
-        const wsSession = await new Promise<Session>(resolve => {
-          // use same session parser as normal gql queries
-          sessionParser(webSocket.upgradeReq, {} as any, () => {
-            if (webSocket.upgradeReq.session) {
-              resolve(webSocket.upgradeReq.session);
-            }
-            return false;
-          });
-        });
+      onConnect: async (connectionParams: any) => {
+        console.log("CP!!!!", connectionParams);
+
+        // if (!connectionParams.subscriptionToken) {
+        //   throw new Error("Missing subscription auth token!");
+        // }
+
+        // const userId = await redis.get(``);
+        // const wsSession = await new Promise<Session>(resolve => {
+        //   console.log("CP!!!!", connectionParams);
+        //   // use same session parser as normal gql queries
+        //   // sessionParser(webSocket.upgradeReq, {} as any, () => {
+        //   //   if (webSocket.upgradeReq.session) {
+        //   //     resolve(webSocket.upgradeReq.session);
+        //   //   }
+        //   //   return false;
+        //   // });
+        // });
         // We have a good session. attach to context
-        if (wsSession.userId) {
-          return { session: wsSession };
-        }
+        // if (wsSession.userId) {
+        //   return { session: wsSession };
+        // }
         // throwing error rejects the connection
-        throw new Error("Missing auth token!");
+
+        // return true;
       }
     }
   });

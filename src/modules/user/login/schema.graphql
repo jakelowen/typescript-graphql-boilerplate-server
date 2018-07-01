@@ -1,3 +1,9 @@
+type LoginPayload {
+  error: [Error!]
+  # if present the auth token
+  login: String
+}
+
 type Mutation {
-  login(email: String!, password: String!): [Error!]
+  login(email: String!, password: String!): LoginPayload
 }

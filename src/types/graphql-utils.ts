@@ -1,6 +1,13 @@
 import { Redis } from "ioredis";
 import { RedisPubSub } from "graphql-redis-subscriptions";
 
+export interface TokenPayload {
+  id: string;
+  version: number;
+  iat: number;
+  exp: number;
+}
+
 export interface Session extends Express.Session {
   userId?: string;
 }
@@ -9,6 +16,9 @@ export interface Context {
   redis: Redis;
   url: string;
   session: Session;
+  user: {
+    id: string;
+  };
   req: Express.Request;
   pubsub: RedisPubSub;
 }

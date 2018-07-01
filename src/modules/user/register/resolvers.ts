@@ -39,12 +39,14 @@ export const resolvers: ResolverMap = {
       });
 
       if (userAlreadyExists) {
-        return [
-          {
-            path: "email",
-            message: duplicateEmail
-          }
-        ];
+        return {
+          error: [
+            {
+              path: "email",
+              message: duplicateEmail
+            }
+          ]
+        };
       }
 
       const user = User.create({
@@ -61,7 +63,7 @@ export const resolvers: ResolverMap = {
       //   );
       // }
 
-      return null;
+      return { register: null };
     }
   }
 };

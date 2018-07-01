@@ -1,3 +1,8 @@
+type RegisterPayload {
+  error: [Error!]
+  register: String
+}
+
 type Mutation {
-  register(email: String!, password: String!): [Error!]
+  register(email: String!, password: String!): RegisterPayload!
 }

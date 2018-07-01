@@ -3,6 +3,7 @@
 
 // import { ResolverMap } from "../../types/graphql-utils";
 import { RedisPubSub } from "graphql-redis-subscriptions";
+import { Session } from "../../types/graphql-utils";
 // import { Session } from "../../types/graphql-utils";
 // import { createForgotPasswordLink } from "../../../utils/createForgotPasswordLink";
 // import { User } from "../../../entity/User";
@@ -18,10 +19,14 @@ import { RedisPubSub } from "graphql-redis-subscriptions";
 export const resolvers: any = {
   Subscription: {
     counter: {
-      subscribe: (_: any, __: any, { pubsub }: { pubsub: RedisPubSub }) =>
+      subscribe: (
+        _: any,
+        __: any,
+        { pubsub, session }: { pubsub: RedisPubSub; session: Session }
+      ) =>
         // context: any
         {
-          // console.log("!!!! session", session);
+          console.log("!!!! session", session);
           const channel = Math.random()
             .toString(36)
             .substring(2, 15); // random channel name

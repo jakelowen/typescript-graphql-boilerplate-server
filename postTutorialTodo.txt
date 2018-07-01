@@ -1,5 +1,12 @@
 // add logging library middleware
 // move logic out of resovlers.
-// expire user sessions lists, also think more about 1 day default expiration of sessions
 
 // understand difference between typescript types vs interfaces
+
+
+refactor todo - 
+
+refactor all tests to use apollo client
+INcrement token version on change password
+increment tokenv version on logout
+custom token validation middleware instead of standard middleware that checks versioning?

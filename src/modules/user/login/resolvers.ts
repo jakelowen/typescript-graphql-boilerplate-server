@@ -3,8 +3,8 @@ import * as bcrypt from "bcryptjs";
 import { ResolverMap } from "../../../types/graphql-utils";
 import { User } from "../../../entity/User";
 import { invalidLogin, confirmEmailError } from "./errorMessages";
-import { userSessionIdPrefix, redisSessionKeyTTL } from "../../../constants";
-
+import * as jwt from "jsonwebtoken";
+import { userTokenVersionPrefix } from "../../../constants";
 const errorResponse = [
   {
     path: "email",
@@ -17,35 +17,44 @@ export const resolvers: ResolverMap = {
     login: async (
       _,
       { email, password }: GQL.ILoginOnMutationArguments,
-      { session, redis, req }
+      { redis }
     ) => {
-      const user = await User.findOne({ where: { email } });
+      const userDb = await User.findOne({ where: { email } });
 
-      if (!user) {
-        return errorResponse;
+      if (!userDb) {
+        return { error: errorResponse };
       }
 
-      if (!user.confirmed) {
-        return [{ path: "email", message: confirmEmailError }];
+      if (!userDb.confirmed) {
+        return { error: [{ path: "email", message: confirmEmailError }] };
       }
 
-      const valid = await bcrypt.compare(password, user.password);
+      const valid = await bcrypt.compare(password, userDb.password);
 
       if (!valid) {
-        return errorResponse;
+        return {
+          error: errorResponse
+        };
       }
 
-      // login successful
-      session.userId = user.id;
-      if (req.sessionID) {
-        await redis
-          .multi()
-          .lpush(`${userSessionIdPrefix}${user.id}`, req.sessionID)
-          .expire(`${userSessionIdPrefix}${user.id}`, redisSessionKeyTTL)
-          .exec();
+      // get counter for userid.
+      let tokenVersion = await redis.get(
+        `${userTokenVersionPrefix}${userDb.id}`
+      );
+
+      if (!tokenVersion) {
+        await redis.set(`${userTokenVersionPrefix}${userDb.id}`, 1);
+        tokenVersion = "1";
       }
 
-      return null;
+      // token
+      const token = jwt.sign(
+        { id: userDb.id, version: tokenVersion },
+        process.env.JWT_SECRET as any,
+        { expiresIn: "24h" }
+      );
+
+      return { login: token };
     }
   }
 };

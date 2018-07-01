@@ -33,6 +33,7 @@ export class TestClient {
           me {
             id
             email
+            subscriptionToken
           }
         }
         `

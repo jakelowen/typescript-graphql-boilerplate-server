@@ -4,6 +4,8 @@ import * as faker from "faker";
 import { createTestConn } from "../../../testUtils/createTestConn";
 import { User } from "../../../entity/User";
 import { TestClient } from "../../../utils/TestClient";
+import { redis } from "../../../redis";
+import { userSubscriptionTokenLookupPrefix } from "../../../constants";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
@@ -44,12 +46,17 @@ describe("logout", () => {
 
     await client.login(email, password);
 
+    const subscriptionToken = await redis.get(
+      `${userSubscriptionTokenLookupPrefix}${userId}`
+    );
+
     const response = await client.me();
 
     expect(response.data).toEqual({
       me: {
         id: userId,
-        email
+        email,
+        subscriptionToken
       }
     });
 
