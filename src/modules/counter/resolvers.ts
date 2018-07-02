@@ -1,20 +1,5 @@
-// import * as yup from "yup";
-// import * as bcrypt from "bcryptjs";
-
-// import { ResolverMap } from "../../types/graphql-utils";
 import { RedisPubSub } from "graphql-redis-subscriptions";
-import { Session } from "../../types/graphql-utils";
-// import { Session } from "../../types/graphql-utils";
-// import { createForgotPasswordLink } from "../../../utils/createForgotPasswordLink";
-// import { User } from "../../../entity/User";
-// import { forgotPasswordPrefix } from "../../../constants";
-// import { expiredKeyError } from "./errorMessages";
-// import { registerPasswordValidation } from "../../../yupSchemas";
-// import { formatYupError } from "../../../utils/formatYupError";
-
-// const schema = yup.object().shape({
-//   newPassword: registerPasswordValidation
-// });
+import { TokenPayload } from "../../types/graphql-utils";
 
 export const resolvers: any = {
   Subscription: {
@@ -22,11 +7,11 @@ export const resolvers: any = {
       subscribe: (
         _: any,
         __: any,
-        { pubsub, session }: { pubsub: RedisPubSub; session: Session }
+        { pubsub, user }: { pubsub: RedisPubSub; user: TokenPayload }
       ) =>
         // context: any
         {
-          console.log("!!!! session", session);
+          console.log("!!!! user", user);
           const channel = Math.random()
             .toString(36)
             .substring(2, 15); // random channel name

@@ -4,8 +4,6 @@ import "reflect-metadata";
 import "dotenv/config";
 import { GraphQLServer } from "graphql-yoga";
 import { RedisPubSub } from "graphql-redis-subscriptions";
-// import * as session from "express-session";
-// import * as connectRedis from "connect-redis";
 import * as RateLimitRedisStore from "rate-limit-redis";
 import * as RateLimit from "express-rate-limit";
 import * as Redis from "ioredis";
@@ -14,26 +12,17 @@ import { redis } from "./redis";
 import { createTypeormConn } from "./utils/createTypeormConn";
 import { confirmEmail } from "./routes/confirmEmail";
 import { genSchema } from "./utils/generateSchema";
-// import { redisSessionPrefix, redisSessionKeyTTL } from "./constants";
 import { createTestConn } from "./testUtils/createTestConn";
-import * as jwt from "jsonwebtoken";
-import { TokenPayload } from "./types/graphql-utils";
-import { userTokenVersionPrefix } from "./constants";
-// import { Session } from "./types/graphql-utils";
+import customJWTmiddleware, {
+  parseToken,
+  validateTokenVersion
+} from "./utils/customJWTmiddleware";
+import { AssertionError } from "assert";
 
 const pubsub = new RedisPubSub({
   publisher: new Redis(),
   subscriber: new Redis()
 });
-
-// redis store for sessions
-// const RedisStore = connectRedis(session);
-
-// auth middleware
-// const auth = jwt({
-//   secret: process.env.JWT_SECRET as string,
-//   credentialsRequired: false
-// });
 
 // pull out sessionParser for use in both queries and subscriptions
 export const startServer = async () => {
@@ -48,7 +37,7 @@ export const startServer = async () => {
       if (connection && !request) {
         return {
           redis,
-          session: connection.context.session,
+          user: connection.context.user,
           pubsub
         };
       }
@@ -77,49 +66,7 @@ export const startServer = async () => {
     })
   );
 
-  // server.express.use(
-  //   session({
-  //     store: new RedisStore({
-  //       client: redis as any,
-  //       prefix: redisSessionPrefix
-  //     }),
-  //     name: "qid",
-  //     secret: process.env.SESSION_SECRET as string,
-  //     resave: false,
-  //     saveUninitialized: false,
-  //     cookie: {
-  //       httpOnly: true,
-  //       secure: process.env.NODE_ENV === "production",
-  //       maxAge: redisSessionKeyTTL
-  //     }
-  //   })
-  // );
-
-  server.express.use(async (req, _, next) => {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      req.user = {};
-      next();
-      return;
-    }
-    try {
-      const decoded = jwt.verify((authHeader as string).split(" ")[1], process
-        .env.JWT_SECRET as string) as TokenPayload;
-      // get the user token version based on id
-      const tokenVersion = await redis.get(
-        `${userTokenVersionPrefix}${decoded.id}`
-      );
-      // if version match attach user
-      // if version not match, ignore.
-      req.user = decoded.version === parseInt(tokenVersion, 10) ? decoded : {};
-      next();
-      return;
-    } catch {
-      req.user = {};
-      next();
-      return;
-    }
-  });
+  server.express.use(customJWTmiddleware);
 
   const cors = {
     credentials: true,
@@ -142,28 +89,17 @@ export const startServer = async () => {
     port: process.env.NODE_ENV === "test" ? 0 : 4000,
     subscriptions: {
       path: "/",
-      onConnect: async () => {
-        // console.log("CP!!!!", connectionParams);
-        // if (!connectionParams.subscriptionToken) {
-        //   throw new Error("Missing subscription auth token!");
-        // }
-        // const userId = await redis.get(``);
-        // const wsSession = await new Promise<Session>(resolve => {
-        //   console.log("CP!!!!", connectionParams);
-        //   // use same session parser as normal gql queries
-        //   // sessionParser(webSocket.upgradeReq, {} as any, () => {
-        //   //   if (webSocket.upgradeReq.session) {
-        //   //     resolve(webSocket.upgradeReq.session);
-        //   //   }
-        //   //   return false;
-        //   // });
-        // });
-        // We have a good session. attach to context
-        // if (wsSession.userId) {
-        //   return { session: wsSession };
-        // }
-        // throwing error rejects the connection
-        // return true;
+      onConnect: async (connectionParams: any) => {
+        const token = connectionParams.token;
+        if (!token) {
+          throw new AssertionError({ message: "NO TOKEN PRESENT" });
+        }
+        const decoded = parseToken(token, process.env.JWT_SECRET as string);
+        const user = await validateTokenVersion(decoded, redis);
+        if (user === {}) {
+          throw new AssertionError({ message: "NO VALID USER" });
+        }
+        return { user };
       }
     }
   });
