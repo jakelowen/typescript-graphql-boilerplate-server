@@ -3,7 +3,7 @@ import * as faker from "faker";
 import * as Redis from "ioredis";
 
 import { User } from "../../../entity/User";
-import { TestClient } from "../../../utils/TestClient";
+import { TestClientApollo } from "../../../utils/TestClientApollo";
 import { createForgotPasswordLink } from "../../../utils/createForgotPasswordLink";
 import { passwordNotLongEnough } from "../register/errorMessages";
 import { expiredKeyError } from "./errorMessages";
@@ -34,7 +34,7 @@ afterAll(async () => {
 
 describe("forgot password", () => {
   test("make sure it works", async () => {
-    const client = new TestClient(process.env.TEST_HOST as string);
+    const client = new TestClientApollo(process.env.TEST_HOST as string);
 
     const url = await createForgotPasswordLink("", userId, redis);
     const parts = url.split("/");
@@ -73,10 +73,8 @@ describe("forgot password", () => {
     });
 
     // successfully log in with new password
-    expect(await client.login(email, newPassword)).toEqual({
-      data: {
-        login: null
-      }
-    });
+    const loginResponse = (await client.login(email, newPassword)) as any;
+    expect(loginResponse.data.login.error).toBeNull();
+    expect(loginResponse.data.login.login).not.toBeNull();
   });
 });

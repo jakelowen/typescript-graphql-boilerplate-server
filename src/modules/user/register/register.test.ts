@@ -9,7 +9,8 @@ import {
   passwordNotLongEnough
 } from "./errorMessages";
 import { createTestConn } from "../../../testUtils/createTestConn";
-import { TestClient } from "../../../utils/TestClient";
+// import { TestClient } from "../../../utils/TestClient";
+import { TestClientApollo } from "../../../utils/TestClientApollo";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
@@ -27,10 +28,12 @@ afterAll(async () => {
 describe("Register User", async () => {
   test("check for duplicate email", async () => {
     // make sure we can register a user
-    const client = new TestClient(process.env.TEST_HOST as string);
+    const client = new TestClientApollo(process.env.TEST_HOST as string);
     const response = await client.register(email, password);
 
-    expect(response.data).toEqual({ register: null });
+    expect(response.data).toEqual({
+      register: { register: null, error: null }
+    });
     const users = await User.find({ where: { email } });
     expect(users).toHaveLength(1);
     const user = users[0];
@@ -38,9 +41,9 @@ describe("Register User", async () => {
     expect(user.password).not.toEqual(password);
 
     // test for duplicate emails
-    const response2 = await client.register(email, password);
-    expect(response2.data.register).toHaveLength(1);
-    expect(response2.data.register[0]).toEqual({
+    const response2 = (await client.register(email, password)) as any;
+    expect(response2.data.register.error).toHaveLength(1);
+    expect(response2.data.register.error[0]).toEqual({
       path: "email",
       message: duplicateEmail
     });
@@ -48,38 +51,47 @@ describe("Register User", async () => {
 
   test("check bad email", async () => {
     // catch bad email
-    const client = new TestClient(process.env.TEST_HOST as string);
+    const client = new TestClientApollo(process.env.TEST_HOST as string);
     const response = await client.register("b", password);
 
     expect(response.data).toEqual({
-      register: [
-        { message: emailNotLongEnough, path: "email" },
-        { message: invalidEmail, path: "email" }
-      ]
+      register: {
+        error: [
+          { message: emailNotLongEnough, path: "email" },
+          { message: invalidEmail, path: "email" }
+        ],
+        register: null
+      }
     });
   });
 
   test("check bad password", async () => {
     // catch bad password
-    const client = new TestClient(process.env.TEST_HOST as string);
+    const client = new TestClientApollo(process.env.TEST_HOST as string);
     const response = await client.register(email, "ad");
 
     expect(response.data).toEqual({
-      register: [{ message: passwordNotLongEnough, path: "password" }]
+      register: {
+        error: [{ message: passwordNotLongEnough, path: "password" }],
+        register: null
+      }
     });
   });
 
   test("check bad password and bad email", async () => {
     // catch bad password and bad email
-    const client = new TestClient(process.env.TEST_HOST as string);
+    const client = new TestClientApollo(process.env.TEST_HOST as string);
     const response = await client.register("df", "ad");
 
     expect(response.data).toEqual({
-      register: [
-        { message: emailNotLongEnough, path: "email" },
-        { message: invalidEmail, path: "email" },
-        { message: passwordNotLongEnough, path: "password" }
-      ]
+      register: {
+        error: [
+          { message: emailNotLongEnough, path: "email" },
+          { message: invalidEmail, path: "email" },
+          { message: passwordNotLongEnough, path: "password" }
+        ],
+        register: null
+      }
     });
   });
 });

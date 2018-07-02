@@ -39,17 +39,17 @@ import * as fetch from "node-fetch";
 
 export class TestClientApollo {
   url: string;
-  token: string | undefined;
+  token: any;
   client: ApolloClient<NormalizedCacheObject>;
   httpLink: HttpLink;
   wsLink: WebSocketLink;
   authLink: any;
   // options: { jar: any; withCredentials: boolean; json: true };
-  constructor(url: string) {
-    this.url = url;
+  constructor(iUrl: string, iToken: any = null) {
+    this.url = iUrl;
     // this.options = { withCredentials: true, jar: rp.jar(), json: true };
-    this.token = undefined;
-
+    this.token = iToken;
+    // console.log("!!! in constructor, ", this.url, this.token);
     this.httpLink = new HttpLink({ uri: this.url, fetch } as any);
     // credentials: "include"
 
@@ -67,19 +67,21 @@ export class TestClientApollo {
       // get the authentication token from local storage if it exists
       // const token = localStorage.getItem("token");
       // return the headers to the context so httpLink can read them
-      return {
-        headers: {
-          ...headers,
-          authorization: this.token ? `Bearer ${this.token}` : ""
-        }
-      };
+      // console.log("TOKEN!!!", this.token);
+      return { headers: { ...headers, authorization: `Bearer ${this.token}` } };
     });
 
     this.client = new ApolloClient({
       link: split(
         // split based on operation type
         ({ query }) => {
-          const { kind, operation } = getMainDefinition(query);
+          const {
+            kind,
+            operation
+          }: {
+            kind: string;
+            operation?: string;
+          } = getMainDefinition(query);
           return kind === "OperationDefinition" && operation === "subscription";
         },
         this.wsLink,
@@ -90,7 +92,7 @@ export class TestClientApollo {
   }
 
   async login(email: string, password: string) {
-    return this.client.mutate({
+    const responseLogin = await this.client.mutate({
       mutation: gql`
       mutation {
           login(email: "${email}", password: "${password}") {
@@ -103,6 +105,8 @@ export class TestClientApollo {
         }
       `
     });
+    this.token = (responseLogin as any).data.login.login;
+    return responseLogin;
   }
 
   async register(email: string, password: string) {
@@ -121,60 +125,50 @@ export class TestClientApollo {
     });
   }
 
-  // async me() {
-  //   return this.client.query({
-  //     query: gql`
-  //       query {
-  //         me {
-  //           id
-  //           email
-  //           subscriptionToken
-  //         }
-  //       }
-  //     `
-  //   });
-  // }
+  async me() {
+    return this.client.query({
+      query: gql`
+        query {
+          me {
+            id
+            email
+          }
+        }
+      `
+    });
+  }
+
+  async logout() {
+    this.token = null;
+    return this.client.mutate({
+      mutation: gql`
+        mutation {
+          logout
+        }
+      `
+    });
+  }
+
+  async forgotPasswordChange(newPassword: string, key: string) {
+    this.token = null;
+    return this.client.mutate({
+      mutation: gql`
+        mutation {
+          forgotPasswordChange(newPassword: "${newPassword}", key: "${key}") {
+            path
+            message
+          }
+        }
+      `
+    });
+  }
 
   // async forgotPasswordChange(newPassword: string, key: string) {
   //   return rp.post(this.url, {
   //     ...this.options,
   //     body: {
   //       query: `
-  //       mutation {
-  //         forgotPasswordChange(newPassword: "${newPassword}", key: "${key}") {
-  //           path
-  //           message
-  //         }
-  //       }
-  //       `
-  //     }
-  //   });
-  // }
 
-  // async register(email: string, password: string) {
-  //   return rp.post(this.url, {
-  //     ...this.options,
-  //     body: {
-  //       query: `
-  //       mutation {
-  //         register(email: "${email}", password: "${password}") {
-  //           path
-  //           message
-  //         }
-  //       }
-  //       `
-  //     }
-  //   });
-  // }
-
-  // async logout() {
-  //   return rp.post(this.url, {
-  //     ...this.options,
-  //     body: {
-  //       query: `
-  //       mutation {
-  //         logout
-  //       }
   //       `
   //     }
   //   });

@@ -29,7 +29,7 @@ export const resolvers: ResolverMap = {
       try {
         await schema.validate(args, { abortEarly: false });
       } catch (err) {
-        return formatYupError(err);
+        return { error: formatYupError(err) };
       }
 
       const { email, password } = args;

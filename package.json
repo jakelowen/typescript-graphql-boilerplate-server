@@ -76,7 +76,7 @@
     "test-server": "NODE_ENV=test ts-node src/index.ts",
     "gen-schema-types": "ts-node src/scripts/createTypes.ts",
     "psql": "psql -U postgres graphql-ts-server-boilerplate",
-    "test": "NODE_ENV=test jest --forceExit --watch"
+    "test": "NODE_ENV=test jest --forceExit"
   },
   "jest": {
     "globalSetup": "./src/testUtils/callSetup.js",

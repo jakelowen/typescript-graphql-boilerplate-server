@@ -35,7 +35,6 @@ describe("test createConfirmEmailLink", () => {
       userId,
       redis
     );
-
     const response = await fetch(url);
     const text = await response.text();
     expect(text).toEqual("ok");

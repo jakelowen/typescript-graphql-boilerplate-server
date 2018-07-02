@@ -49,7 +49,7 @@ export const resolvers: ResolverMap = {
 
       // token
       const token = jwt.sign(
-        { id: userDb.id, version: tokenVersion },
+        { id: userDb.id, version: parseInt(tokenVersion, 10) },
         process.env.JWT_SECRET as any,
         { expiresIn: "24h" }
       );

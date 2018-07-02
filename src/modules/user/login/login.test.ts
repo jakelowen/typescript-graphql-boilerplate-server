@@ -90,6 +90,6 @@ describe("login", () => {
     const tokenVersion = await redis.get(
       `${userTokenVersionPrefix}${decoded.id}`
     );
-    expect(decoded.version).toEqual(tokenVersion);
+    expect(decoded.version).toEqual(parseInt(tokenVersion, 10));
   });
 });

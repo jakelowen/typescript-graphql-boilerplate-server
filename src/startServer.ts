@@ -16,7 +16,9 @@ import { confirmEmail } from "./routes/confirmEmail";
 import { genSchema } from "./utils/generateSchema";
 // import { redisSessionPrefix, redisSessionKeyTTL } from "./constants";
 import { createTestConn } from "./testUtils/createTestConn";
-import * as jwt from "express-jwt";
+import * as jwt from "jsonwebtoken";
+import { TokenPayload } from "./types/graphql-utils";
+import { userTokenVersionPrefix } from "./constants";
 // import { Session } from "./types/graphql-utils";
 
 const pubsub = new RedisPubSub({
@@ -28,10 +30,10 @@ const pubsub = new RedisPubSub({
 // const RedisStore = connectRedis(session);
 
 // auth middleware
-const auth = jwt({
-  secret: process.env.JWT_SECRET as string,
-  credentialsRequired: false
-});
+// const auth = jwt({
+//   secret: process.env.JWT_SECRET as string,
+//   credentialsRequired: false
+// });
 
 // pull out sessionParser for use in both queries and subscriptions
 export const startServer = async () => {
@@ -93,7 +95,31 @@ export const startServer = async () => {
   //   })
   // );
 
-  server.express.use(auth);
+  server.express.use(async (req, _, next) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      req.user = {};
+      next();
+      return;
+    }
+    try {
+      const decoded = jwt.verify((authHeader as string).split(" ")[1], process
+        .env.JWT_SECRET as string) as TokenPayload;
+      // get the user token version based on id
+      const tokenVersion = await redis.get(
+        `${userTokenVersionPrefix}${decoded.id}`
+      );
+      // if version match attach user
+      // if version not match, ignore.
+      req.user = decoded.version === parseInt(tokenVersion, 10) ? decoded : {};
+      next();
+      return;
+    } catch {
+      req.user = {};
+      next();
+      return;
+    }
+  });
 
   const cors = {
     credentials: true,
@@ -116,13 +142,11 @@ export const startServer = async () => {
     port: process.env.NODE_ENV === "test" ? 0 : 4000,
     subscriptions: {
       path: "/",
-      onConnect: async (connectionParams: any) => {
-        console.log("CP!!!!", connectionParams);
-
+      onConnect: async () => {
+        // console.log("CP!!!!", connectionParams);
         // if (!connectionParams.subscriptionToken) {
         //   throw new Error("Missing subscription auth token!");
         // }
-
         // const userId = await redis.get(``);
         // const wsSession = await new Promise<Session>(resolve => {
         //   console.log("CP!!!!", connectionParams);
@@ -139,7 +163,6 @@ export const startServer = async () => {
         //   return { session: wsSession };
         // }
         // throwing error rejects the connection
-
         // return true;
       }
     }
