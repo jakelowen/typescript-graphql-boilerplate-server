@@ -59,149 +59,17 @@ describe("subscriptions", () => {
     });
   });
 
-  // Does not work! I am expecting an error.
   test("Unauthed subscriptions are rejected", done => {
     const client = new TestClientApollo(process.env.TEST_HOST as string);
-
-    const sub = client.client.subscribe(defaultOptions).subscribe({
-      next(result) {
-        expect(result).toEqual({
-          data: {
-            counter: {
-              count: 0
-            }
-          }
-        });
-        sub.unsubscribe();
+    // jest.setTimeout(1000); // increase timeout
+    client.client.subscribe(defaultOptions).subscribe(
+      res => {
+        console.log(res);
+      },
+      err => {
+        expect(err).toEqual({ message: "NO TOKEN PRESENT" });
         done();
       }
-    });
-
-    // Received value must be a function, but instead "object" was found
-    expect(sub).toThrow();
-  });
-
-  // does not work
-  // Error: Uncaught { message: 'NO TOKEN PRESENT' }
-  test("Unauthed subscriptions are rejected second attempt", done => {
-    const client = new TestClientApollo(process.env.TEST_HOST as string);
-
-    try {
-      const sub = client.client.subscribe(defaultOptions).subscribe({
-        next(result) {
-          expect(result).toEqual({
-            data: {
-              counter: {
-                count: 0
-              }
-            }
-          });
-          sub.unsubscribe();
-          // done();
-        }
-      });
-    } catch (error) {
-      console.log(error);
-      expect(error).toEqual({
-        message: "NO TOKEN PRESENT"
-      });
-      done();
-    }
-  });
-
-  // does not work
-  // Error: Uncaught { message: 'NO TOKEN PRESENT' }
-  test("Unauthed subscriptions are rejected second attempt", done => {
-    const client = new TestClientApollo(process.env.TEST_HOST as string);
-
-    try {
-      const sub = client.client.subscribe(defaultOptions).subscribe({
-        next(result) {
-          expect(result).toEqual({
-            data: {
-              counter: {
-                count: 0
-              }
-            }
-          });
-          sub.unsubscribe();
-          // done();
-        }
-      });
-    } catch (error) {
-      console.log(error);
-      expect(error).toEqual({
-        message: "NO TOKEN PRESENT"
-      });
-      done();
-    }
-  });
-
-  // does not work
-  // Expected the function to throw an error.
-  // But it didn't throw anything.
-  test("Unauthed subscriptions are rejected third attempt", done => {
-    const client = new TestClientApollo(process.env.TEST_HOST as string);
-
-    expect(async () => {
-      const sub = await client.client.subscribe(defaultOptions).subscribe({
-        next(result) {
-          expect(result).toEqual({
-            data: {
-              counter: {
-                count: 0
-              }
-            }
-          });
-          sub.unsubscribe();
-          done();
-        }
-      });
-    }).toThrowError();
-  });
-
-  // does not work
-  // Expected the function to throw an error.
-  // But it didn't throw anything.
-  test("Unauthed subscriptions are rejected fourth attempt", done => {
-    const client = new TestClientApollo(process.env.TEST_HOST as string);
-
-    const attempt = async () => {
-      const sub = await client.client.subscribe(defaultOptions).subscribe({
-        next(result) {
-          expect(result).toEqual({
-            data: {
-              counter: {
-                count: 0
-              }
-            }
-          });
-          sub.unsubscribe();
-          done();
-        }
-      });
-    };
-
-    expect(attempt).toThrowError();
+    );
   });
 });
-
-// const attempt = () => {
-//   client.client.subscribe(defaultOptions).subscribe({
-//     next(result) {
-//       try {
-//         console.log(result);
-//         expect(result).toEqual({ data: { counter: { count: 0 } } });
-//       } catch (error) {
-//         console.log(error);
-//       }
-
-//       // sub.unsubscribe();
-//     }
-//   });
-// };
-
-// // attempt();
-
-// expect(attempt()).toThrow();
-// done();
