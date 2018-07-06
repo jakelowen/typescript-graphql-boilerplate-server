@@ -35,7 +35,9 @@ export const validateTokenVersion = async (
   const tokenVersion = await iredis.get(
     `${userTokenVersionPrefix}${(decoded as TokenPayload).id}`
   );
-  return parseInt(tokenVersion, 10) ? decoded : {};
+  return parseInt(tokenVersion, 10) === (decoded as TokenPayload).version
+    ? decoded
+    : {};
 };
 
 export default async (req: any, _: any, next: any) => {

@@ -38,7 +38,7 @@ describe("me", () => {
     expect(response.data.me).toBeNull();
   });
 
-  test.only("get current user", async () => {
+  test("get current user", async () => {
     const url = process.env.TEST_HOST as string;
     const client = new TestClientApollo(url);
     await client.login(email, password);
