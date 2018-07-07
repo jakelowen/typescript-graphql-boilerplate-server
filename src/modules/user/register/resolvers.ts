@@ -1,7 +1,7 @@
 import * as yup from "yup";
 
 import { ResolverMap } from "../../../types/graphql-utils";
-import { User } from "../../../entity/User";
+import User from "../../../models/User";
 import { formatYupError } from "../../../utils/formatYupError";
 import {
   duplicateEmail,
@@ -33,10 +33,10 @@ export const resolvers: ResolverMap = {
       }
 
       const { email, password } = args;
-      const userAlreadyExists = await User.findOne({
-        where: { email },
-        select: ["id"]
-      });
+      const userAlreadyExists = await User.query()
+        .where({ email })
+        .select("id")
+        .first();
 
       if (userAlreadyExists) {
         return {
@@ -49,19 +49,7 @@ export const resolvers: ResolverMap = {
         };
       }
 
-      const user = User.create({
-        email,
-        password
-      });
-
-      await user.save();
-
-      // if (process.env.NODE_ENV !== "test") {
-      //   await sendEmail(
-      //     user.email,
-      //     await createConfirmEmailLink(url, user.id, redis)
-      //   );
-      // }
+      await User.query().insert({ email, password });
 
       return { register: null };
     }

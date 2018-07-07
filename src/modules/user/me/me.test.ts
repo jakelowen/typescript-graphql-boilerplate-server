@@ -1,38 +1,28 @@
-import { Connection } from "typeorm";
-import * as faker from "faker";
 import * as jwt from "jsonwebtoken";
+import * as faker from "faker";
 
-import { createTestConn } from "../../../testUtils/createTestConn";
-import { User } from "../../../entity/User";
-// import { TestClient } from "../../../utils/TestClient";
+import User from "../../../models/User";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
 import { redis } from "../../../redis";
 import { userTokenVersionPrefix } from "../../../constants";
-// import { redis } from "../../../redis";
-// import { userSubscriptionTokenLookupPrefix } from "../../../constants";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
 const password = faker.internet.password();
 
 let userId: string;
-let conn: Connection;
 
 beforeAll(async () => {
-  conn = await createTestConn();
-  const user = await User.create({
+  const user = await User.query().insert({
     email,
     password,
     confirmed: true
-  }).save();
+  });
   userId = user.id;
-});
-afterAll(async () => {
-  conn.close();
 });
 
 describe("me", () => {
-  test("return null if no cookie", async () => {
+  test("return null if no valid token", async () => {
     const client = new TestClientApollo(process.env.TEST_HOST as string);
     const response = (await client.me()) as any;
     expect(response.data.me).toBeNull();

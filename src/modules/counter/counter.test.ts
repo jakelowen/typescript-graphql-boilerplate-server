@@ -7,16 +7,12 @@
 // websocket auth: https://www.apollographql.com/docs/react/advanced/subscriptions.html#authentication
 import * as faker from "faker";
 import gql from "graphql-tag";
-import { User } from "../../entity/User";
-import { createTestConn } from "../../testUtils/createTestConn";
-import { Connection } from "typeorm";
+import User from "../../models/User";
 import { TestClientApollo } from "../../utils/TestClientApollo";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
 const password = faker.internet.password();
-
-let conn: Connection;
 
 const defaultOptions = {
   query: gql`
@@ -28,36 +24,35 @@ const defaultOptions = {
   `
 };
 
-beforeAll(async () => {
-  conn = await createTestConn();
-});
-afterAll(async () => {
-  conn.close();
-});
-
 describe("subscriptions", () => {
   // works as expected.
-  test("should start a subscription on network interface and unsubscribe", async done => {
-    const client = new TestClientApollo(process.env.TEST_HOST as string);
-    await client.register(email, password);
-    await User.update({ email }, { confirmed: true });
-    await client.login(email, password);
+  test(
+    "should start a subscription on network interface and unsubscribe",
+    async done => {
+      const client = new TestClientApollo(process.env.TEST_HOST as string);
+      await client.register(email, password);
+      await User.query()
+        .update({ confirmed: true })
+        .where({ email });
+      await client.login(email, password);
 
-    // set up subscription listener
-    const sub = client.client.subscribe(defaultOptions).subscribe({
-      next(result) {
-        expect(result).toEqual({
-          data: {
-            counter: {
-              count: 0
+      // set up subscription listener
+      const sub = client.client.subscribe(defaultOptions).subscribe({
+        next(result) {
+          expect(result).toEqual({
+            data: {
+              counter: {
+                count: 0
+              }
             }
-          }
-        });
-        sub.unsubscribe();
-        done();
-      }
-    });
-  });
+          });
+          sub.unsubscribe();
+          done();
+        }
+      });
+    },
+    5000
+  );
 
   test("Unauthed subscriptions are rejected", done => {
     const client = new TestClientApollo(process.env.TEST_HOST as string);

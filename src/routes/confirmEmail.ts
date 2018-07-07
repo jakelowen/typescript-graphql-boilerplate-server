@@ -1,14 +1,15 @@
 import { Request, Response } from "express";
 
-import { User } from "../entity/User";
-import { redis } from "../redis";
+import User from "../models/User";
 
 export const confirmEmail = async (req: Request, res: Response) => {
   const { id } = req.params;
-  const userId = await redis.get(id);
+  const userId = await User.extractUserIdFromConfirmEmailKey(id);
   if (userId) {
-    await User.update({ id: userId }, { confirmed: true });
-    await redis.del(id);
+    await User.query()
+      .update({ confirmed: true })
+      .where({ id: userId });
+    await User.deleteConfirmEmailLink(id);
     res.send("ok");
   } else {
     res.send("invalid");

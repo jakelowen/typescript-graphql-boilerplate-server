@@ -14,6 +14,7 @@
     "@types/ioredis": "^3.2.9",
     "@types/jest": "^23.1.1",
     "@types/jsonwebtoken": "^7.2.7",
+    "@types/knex": "^0.14.15",
     "@types/node": "^10.3.4",
     "@types/node-fetch": "^2.1.1",
     "@types/request-promise": "^4.1.41",
@@ -32,6 +33,7 @@
     "graphql-tag": "^2.9.2",
     "jest": "^23.1.0",
     "nodemon": "^1.17.5",
+    "schemats": "^3.0.3",
     "subscriptions-transport-ws": "^0.9.11",
     "ts-jest": "^22.4.6",
     "ts-node": "^6.1.2",
@@ -60,8 +62,10 @@
     "graphql-yoga": "^1.14.8",
     "ioredis": "^3.2.2",
     "jsonwebtoken": "^8.3.0",
+    "knex": "^0.15.0",
     "merge-graphql-schemas": "^1.5.2",
     "node-fetch": "^2.1.2",
+    "objection": "^1.1.10",
     "pg": "^7.4.3",
     "rate-limit-redis": "^1.5.0",
     "reflect-metadata": "^0.1.12",
@@ -76,7 +80,8 @@
     "test-server": "NODE_ENV=test ts-node src/index.ts",
     "gen-schema-types": "ts-node src/scripts/createTypes.ts",
     "psql": "psql -U postgres graphql-ts-server-boilerplate",
-    "test": "NODE_ENV=test jest --forceExit"
+    "test": "NODE_ENV=test jest --forceExit",
+    "gen-db-schema-types": "schemats generate -c postgres://postgres@localhost/graphql-ts-server-boilerplate -o src/types/dbschema.ts"
   },
   "jest": {
     "globalSetup": "./src/testUtils/callSetup.js",

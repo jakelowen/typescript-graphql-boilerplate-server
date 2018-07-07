@@ -1,29 +1,17 @@
 import * as faker from "faker";
-import { Connection } from "typeorm";
 
-import { User } from "../../../entity/User";
+import User from "../../../models/User";
 import {
   duplicateEmail,
   emailNotLongEnough,
   invalidEmail,
   passwordNotLongEnough
 } from "./errorMessages";
-import { createTestConn } from "../../../testUtils/createTestConn";
-// import { TestClient } from "../../../utils/TestClient";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
 const password = faker.internet.password();
-
-let conn: Connection;
-
-beforeAll(async () => {
-  conn = await createTestConn();
-});
-afterAll(async () => {
-  conn.close();
-});
 
 describe("Register User", async () => {
   test("check for duplicate email", async () => {
@@ -34,7 +22,8 @@ describe("Register User", async () => {
     expect(response.data).toEqual({
       register: { register: null, error: null }
     });
-    const users = await User.find({ where: { email } });
+    // const users = await User.find({ where: { email } });
+    const users = await User.query().where({ email });
     expect(users).toHaveLength(1);
     const user = users[0];
     expect(user.email).toEqual(email);

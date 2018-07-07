@@ -1,10 +1,7 @@
-import * as bcrypt from "bcryptjs";
-
+import User from "../../../models/User";
 import { ResolverMap } from "../../../types/graphql-utils";
-import { User } from "../../../entity/User";
 import { invalidLogin, confirmEmailError } from "./errorMessages";
-import * as jwt from "jsonwebtoken";
-import { userTokenVersionPrefix } from "../../../constants";
+
 const errorResponse = [
   {
     path: "email",
@@ -17,44 +14,24 @@ export const resolvers: ResolverMap = {
     login: async (
       _,
       { email, password }: GQL.ILoginOnMutationArguments,
-      { redis }
+      __
     ) => {
-      const userDb = await User.findOne({ where: { email } });
-
-      if (!userDb) {
+      const existingUser = await User.query()
+        .where({ email })
+        .first();
+      if (!existingUser) {
         return { error: errorResponse };
       }
 
-      if (!userDb.confirmed) {
+      if (!existingUser.confirmed) {
         return { error: [{ path: "email", message: confirmEmailError }] };
       }
 
-      const valid = await bcrypt.compare(password, userDb.password);
-
-      if (!valid) {
-        return {
-          error: errorResponse
-        };
+      if (!(await existingUser.verifyPassword(password))) {
+        return { error: errorResponse };
       }
 
-      // get counter for userid.
-      let tokenVersion = await redis.get(
-        `${userTokenVersionPrefix}${userDb.id}`
-      );
-
-      if (!tokenVersion) {
-        await redis.set(`${userTokenVersionPrefix}${userDb.id}`, 1);
-        tokenVersion = "1";
-      }
-
-      // token
-      const token = jwt.sign(
-        { id: userDb.id, version: parseInt(tokenVersion, 10) },
-        process.env.JWT_SECRET as any,
-        { expiresIn: "24h" }
-      );
-
-      return { login: token };
+      return { login: existingUser.loginToken };
     }
   }
 };

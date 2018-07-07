@@ -1,10 +1,7 @@
 import * as yup from "yup";
-import * as bcrypt from "bcryptjs";
 
 import { ResolverMap } from "../../../types/graphql-utils";
-import { createForgotPasswordLink } from "../../../utils/createForgotPasswordLink";
-import { User } from "../../../entity/User";
-import { forgotPasswordPrefix } from "../../../constants";
+import User from "../../../models/User";
 import { expiredKeyError } from "./errorMessages";
 import { registerPasswordValidation } from "../../../yupSchemas";
 import { formatYupError } from "../../../utils/formatYupError";
@@ -18,17 +15,15 @@ export const resolvers: ResolverMap = {
     sendForgotPasswordEmail: async (
       _,
       { email }: GQL.ISendForgotPasswordEmailOnMutationArguments,
-      { redis }
+      __
     ) => {
-      const user = await User.findOne({ where: { email } });
+      const user = await User.query()
+        .where({ email })
+        .first();
       if (!user) {
         return false;
       }
-      await createForgotPasswordLink(
-        process.env.FRONTEND_HOST as string,
-        user.id,
-        redis
-      );
+      await User.createForgotPasswordLink(user.id);
       // @todo send email with link
 
       return true;
@@ -36,11 +31,9 @@ export const resolvers: ResolverMap = {
     forgotPasswordChange: async (
       _,
       { newPassword, key }: GQL.IForgotPasswordChangeOnMutationArguments,
-      { redis }
+      __
     ) => {
-      const redisKey = `${forgotPasswordPrefix}${key}`;
-      const userId = await redis.get(redisKey);
-      // check if found that key is valid
+      const userId = await User.extractUserIdFromForgotPassKey(key);
       if (!userId) {
         return [{ path: "key", message: expiredKeyError }];
       }
@@ -52,19 +45,14 @@ export const resolvers: ResolverMap = {
         return formatYupError(err);
       }
 
-      //  update user
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-
-      const userUpdatePromise = User.update(
-        { id: userId },
-        {
-          password: hashedPassword
-        }
-      );
-
-      const delRedisKeyPromise = redis.del(redisKey);
-
-      await Promise.all([userUpdatePromise, delRedisKeyPromise]);
+      await Promise.all([
+        User.query()
+          .update({
+            password: newPassword
+          })
+          .where({ id: userId }),
+        User.deleteForgotPassKey(key)
+      ]);
 
       return null;
     }

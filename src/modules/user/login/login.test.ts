@@ -1,10 +1,8 @@
 import * as faker from "faker";
-import { Connection } from "typeorm";
 import * as jwt from "jsonwebtoken";
 
 import { invalidLogin, confirmEmailError } from "./errorMessages";
-import { User } from "../../../entity/User";
-import { createTestConn } from "../../../testUtils/createTestConn";
+import User from "../../../models/User";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
 import { redis } from "../../../redis";
 import { userTokenVersionPrefix } from "../../../constants";
@@ -26,15 +24,6 @@ const loginExpectError = async (
   });
 };
 
-let conn: Connection;
-
-beforeAll(async () => {
-  conn = await createTestConn();
-});
-afterAll(async () => {
-  conn.close();
-});
-
 describe("login", () => {
   test("email not found sends back error", async () => {
     const clientApollo = new TestClientApollo(process.env.TEST_HOST as string);
@@ -47,13 +36,14 @@ describe("login", () => {
   });
 
   test("email not confirmed", async () => {
-    // const client = new TestClient(process.env.TEST_HOST as string);
     const clientApollo = new TestClientApollo(process.env.TEST_HOST as string);
     await clientApollo.register(email, password);
 
     await loginExpectError(clientApollo, email, password, confirmEmailError);
 
-    await User.update({ email }, { confirmed: true });
+    await User.query()
+      .update({ confirmed: true })
+      .where({ email });
 
     await loginExpectError(clientApollo, email, "fdsaffdsafdsa", invalidLogin);
 
@@ -75,11 +65,11 @@ describe("login", () => {
       throw new Error("Token is malformed");
     }
     // make sure token id = user id
-    const idLookupUser = await User.findOne({
-      where: {
+    const idLookupUser = await User.query()
+      .where({
         id: decoded.id
-      }
-    });
+      })
+      .first();
     if (idLookupUser) {
       expect(idLookupUser.email as string).toEqual(email);
     } else {

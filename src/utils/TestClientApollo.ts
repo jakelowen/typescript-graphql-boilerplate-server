@@ -9,34 +9,6 @@ import { setContext } from "apollo-link-context";
 import gql from "graphql-tag";
 import * as fetch from "node-fetch";
 
-// let subscriptionToken = null;
-// Create an http link:
-// const httpLink = new HttpLink({
-//   uri: process.env.TEST_HOST,
-//   fetch
-// } as any);
-
-// Create a WebSocket link:
-// const wsLink = new WebSocketLink({
-//   uri: process.env.TEST_HOST_WS,
-//   options: {
-//     reconnect: true,
-//     connectionParams: () => ({})
-//   }
-// } as any);
-
-// using the ability to split links, you can send data to each link
-// depending on what kind of operation is being sent
-// const link = split(
-//   // split based on operation type
-//   ({ query }) => {
-//     const { kind, operation } = getMainDefinition(query);
-//     return kind === "OperationDefinition" && operation === "subscription";
-//   },
-//   wsLink,
-//   httpLink
-// );
-
 export class TestClientApollo {
   url: string;
   token: any;
@@ -56,7 +28,9 @@ export class TestClientApollo {
     this.wsLink = new WebSocketLink({
       uri: this.url.replace("http://", "ws://"),
       options: {
-        reconnect: true,
+        // reconnect: true,
+        inactivityTimeout: 100,
+        timeout: 1000,
         connectionParams: () => ({
           token: this.token
         })
@@ -162,15 +136,4 @@ export class TestClientApollo {
       `
     });
   }
-
-  // async forgotPasswordChange(newPassword: string, key: string) {
-  //   return rp.post(this.url, {
-  //     ...this.options,
-  //     body: {
-  //       query: `
-
-  //       `
-  //     }
-  //   });
-  // }
 }

@@ -1,5 +1,3 @@
-// @TODO - SECURE WEBSOCKET CONNECTION
-
 import "reflect-metadata";
 import "dotenv/config";
 import { GraphQLServer } from "graphql-yoga";
@@ -9,10 +7,9 @@ import * as RateLimit from "express-rate-limit";
 import * as Redis from "ioredis";
 
 import { redis } from "./redis";
-import { createTypeormConn } from "./utils/createTypeormConn";
 import { confirmEmail } from "./routes/confirmEmail";
 import { genSchema } from "./utils/generateSchema";
-import { createTestConn } from "./testUtils/createTestConn";
+import db from "./knex";
 import customJWTmiddleware, {
   parseToken,
   validateTokenVersion
@@ -24,7 +21,6 @@ const pubsub = new RedisPubSub({
   subscriber: new Redis()
 });
 
-// pull out sessionParser for use in both queries and subscriptions
 export const startServer = async () => {
   if (process.env.NODE_ENV === "test") {
     redis.flushall();
@@ -38,7 +34,8 @@ export const startServer = async () => {
         return {
           redis,
           user: connection.context.user,
-          pubsub
+          pubsub,
+          db
         };
       }
       // else return the normal conext
@@ -49,7 +46,8 @@ export const startServer = async () => {
         // session: request.session,
         user: request.user,
         req: request,
-        pubsub
+        pubsub,
+        db
       };
       // }
     }
@@ -77,12 +75,6 @@ export const startServer = async () => {
   };
 
   server.express.get("/confirm/:id", confirmEmail);
-
-  if (process.env.NODE_ENV === "test") {
-    await createTestConn(true);
-  } else {
-    await createTypeormConn();
-  }
 
   const app = await server.start({
     cors,

@@ -1,32 +1,21 @@
-import { Connection } from "typeorm";
 import * as faker from "faker";
 
-import { createTestConn } from "../../../testUtils/createTestConn";
-import { User } from "../../../entity/User";
-// import { TestClient } from "../../../utils/TestClient";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
-// import { redis } from "../../../redis";
-// import { userSubscriptionTokenLookupPrefix } from "../../../constants";
+import User from "../../../models/User";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
 const password = faker.internet.password();
 
-let conn: Connection;
-
 let userId: string;
 
 beforeAll(async () => {
-  conn = await createTestConn();
-  const user = await User.create({
+  const user = await User.query().insert({
     email,
     password,
     confirmed: true
-  }).save();
+  });
   userId = user.id;
-});
-afterAll(async () => {
-  conn.close();
 });
 
 describe("logout", () => {
