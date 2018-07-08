@@ -1,12 +1,6 @@
 // add logging library middleware
-// move logic out of resovlers.
 
 // understand difference between typescript types vs interfaces
 
-
 refactor todo - 
-
-refactor all tests to use apollo client
 INcrement token version on change password
-increment tokenv version on logout
-custom token validation middleware instead of standard middleware that checks versioning?
