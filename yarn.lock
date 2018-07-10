@@ -202,6 +202,10 @@
     "@types/events" "*"
     "@types/node" "*"
 
+"@types/lodash@^4.14.111":
+  version "4.14.111"
+  resolved "https://registry.yarnpkg.com/@types/lodash/-/lodash-4.14.111.tgz#d926250baa9526c0ffe85914dd10363068e7893a"
+
 "@types/mime@*":
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/@types/mime/-/mime-2.0.0.tgz#5a7306e367c539b9f6543499de8dd519fac37a8b"

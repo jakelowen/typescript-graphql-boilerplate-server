@@ -112,6 +112,23 @@ export class TestClientApollo {
     });
   }
 
+  async meWithTeamPermissions() {
+    return this.client.query({
+      query: gql`
+        query {
+          me {
+            id
+            email
+            teamPermissions {
+              team
+              permissions
+            }
+          }
+        }
+      `
+    });
+  }
+
   async logout() {
     this.token = null;
     return this.client.mutate({

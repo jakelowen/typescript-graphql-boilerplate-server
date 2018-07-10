@@ -6,6 +6,7 @@ import db from "../../../knex";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
 import { redis } from "../../../redis";
 import { userTokenVersionPrefix } from "../../../constants";
+import { teams } from "../../../types/dbschema";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
@@ -72,21 +73,30 @@ describe("me", () => {
     expect(response.data.me).toBeNull();
   });
 
-  // test("permissions test temp", async () => {
-  //   const team = await Team.query().insert({ name: "fooTeam" });
-  //   const permission = await Permission.query().insert({ name: "Admin" });
-  //   await GrantedTeamPermission.query().insert({
-  //     teamId: team.id,
-  //     userId,
-  //     permissionId: permission.id
-  //   });
+  test("permissions test", async () => {
+    const team: teams[] = await db("teams")
+      .insert({ name: "fooTeam" })
+      .returning("*");
+    const permission = await db("permissions")
+      .insert([{ name: "User" }])
+      .returning("*");
+    await db("granted_team_permissions").insert([
+      {
+        teamId: team[0].id,
+        userId,
+        permissionId: permission[0].id
+      }
+    ]);
 
-  //   const foo = await User.query()
-  //     .eager(
-  //       "[grantedTeamPermissions, grantedTeamPermissions.[team, permission]]"
-  //     )
-  //     .select();
-  //   console.log(JSON.stringify(foo, null, "\t"));
-  //   expect(foo).toEqual("bar");
-  // });
+    const url = process.env.TEST_HOST as string;
+    const client = new TestClientApollo(url);
+    await client.login(email, password);
+    const responseMe = (await client.meWithTeamPermissions()) as any;
+    expect(responseMe.data.me.teamPermissions).toHaveLength(1);
+    expect(responseMe.data.me.teamPermissions[0].team).toEqual(team[0].id);
+    expect(responseMe.data.me.teamPermissions[0].permissions).toContain("User");
+    expect(responseMe.data.me.teamPermissions[0].permissions).not.toContain(
+      "Admin"
+    );
+  });
 });
