@@ -66,7 +66,6 @@
     "knex": "^0.15.0",
     "merge-graphql-schemas": "^1.5.2",
     "node-fetch": "^2.1.2",
-    "objection": "^1.1.10",
     "pg": "^7.4.3",
     "rate-limit-redis": "^1.5.0",
     "reflect-metadata": "^0.1.12",
