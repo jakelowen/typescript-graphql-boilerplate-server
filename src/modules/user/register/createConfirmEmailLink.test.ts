@@ -1,9 +1,9 @@
 import * as Redis from "ioredis";
 import fetch from "node-fetch";
 
-// import db from "../../../knex";
-import User from "../../../models/User";
+import db from "../../../knex";
 import * as faker from "faker";
+import createConfirmEmailLink from "./logic/createConfirmEmailLink";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
@@ -14,29 +14,32 @@ const redis = new Redis();
 let userId: string;
 
 beforeAll(async () => {
-  const user = await User.query().insert({
-    email,
-    password,
-    confirmed: true
-  });
-  userId = user.id;
+  const user = await db("users")
+    .insert({
+      email,
+      password,
+      confirmed: true
+    })
+    .returning("*");
+  userId = user[0].id;
 });
 
 describe("test createConfirmEmailLink", () => {
   test("make sure it confirms user and clears key in redis", async () => {
-    const url = await User.createConfirmEmailLink(
+    const url = await createConfirmEmailLink(
       process.env.TEST_HOST as string,
-      userId
+      userId,
+      redis
     );
     const response = await fetch(url);
     const text = await response.text();
     expect(text).toEqual("ok");
 
-    const user = await User.query()
+    const user = await db("users")
       .where({ id: userId })
       .first();
     // findOne({ where: { id: userId } });
-    expect((user as User).confirmed).toBeTruthy();
+    expect(user.confirmed).toBeTruthy();
 
     const chunks = url.split("/");
     const key = chunks[chunks.length - 1];

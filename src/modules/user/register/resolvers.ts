@@ -1,16 +1,17 @@
 import * as yup from "yup";
 
-import { ResolverMap } from "../../../types/graphql-utils";
-import User from "../../../models/User";
-import { formatYupError } from "../../../utils/formatYupError";
-import {
-  duplicateEmail,
-  emailNotLongEnough,
-  invalidEmail
-} from "./errorMessages";
 import { registerPasswordValidation } from "../../../yupSchemas";
+import { ResolverMap } from "../../../types/graphql-utils";
+import { formatYupError } from "../../../utils/formatYupError";
+import insertNewUser from "./logic/insertNewUser";
+import {
+  emailNotLongEnough,
+  invalidEmail,
+  duplicateEmail
+} from "./errorMessages";
+import hashPassword from "../shared/logic/hashPassword";
 
-const schema = yup.object().shape({
+export const registrationYupSchema = yup.object().shape({
   email: yup
     .string()
     .min(3, emailNotLongEnough)
@@ -23,35 +24,30 @@ export const resolvers: ResolverMap = {
   Mutation: {
     register: async (
       _,
-      args: GQL.IRegisterOnMutationArguments
-      // { redis, url }
+      args: GQL.IRegisterOnMutationArguments,
+      { dataloaders }
     ) => {
+      // make sure input matches validation
       try {
-        await schema.validate(args, { abortEarly: false });
+        await registrationYupSchema.validate(args, { abortEarly: false });
       } catch (err) {
         return { error: formatYupError(err) };
       }
 
+      // see if user already in db with this email
       const { email, password } = args;
-      const userAlreadyExists = await User.query()
-        .where({ email })
-        .select("id")
-        .first();
+      const existingUser = await dataloaders.userByEmail.load(email);
 
-      if (userAlreadyExists) {
+      if (existingUser) {
         return {
-          error: [
-            {
-              path: "email",
-              message: duplicateEmail
-            }
-          ]
+          error: [{ path: "email", message: duplicateEmail }]
         };
       }
 
-      await User.query().insert({ email, password });
-
-      return { register: null };
+      // proceed with registration
+      const hashedPassword = await hashPassword(password);
+      await insertNewUser(email, hashedPassword, dataloaders);
+      return { register: null, error: null };
     }
   }
 };

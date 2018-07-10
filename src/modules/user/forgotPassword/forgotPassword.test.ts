@@ -1,9 +1,13 @@
 import * as faker from "faker";
+import * as Redis from "ioredis";
 
-import User from "../../../models/User";
+import db from "../../../knex";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
-import { passwordNotLongEnough } from "../register/errorMessages";
 import { expiredKeyError } from "./errorMessages";
+import { passwordNotLongEnough } from "../shared/errorMessages";
+import createForgotPasswordLink from "./logic/createForgotPasswordLink";
+
+const redis = new Redis();
 
 let userId: string;
 
@@ -13,19 +17,21 @@ const password = faker.internet.password();
 const newPassword = "fdafdsarewewrtggdd";
 
 beforeAll(async () => {
-  const user = await User.query().insert({
-    email,
-    password,
-    confirmed: true
-  });
-  userId = user.id;
+  const user = await db("users")
+    .insert({
+      email,
+      password,
+      confirmed: true
+    })
+    .returning("*");
+  userId = user[0].id;
 });
 
 describe("forgot password", () => {
   test("make sure it works", async () => {
     const client = new TestClientApollo(process.env.TEST_HOST as string);
 
-    const url = await User.createForgotPasswordLink(userId);
+    const url = await createForgotPasswordLink(userId, redis);
     const parts = url.split("/");
     const key = parts[parts.length - 1];
 

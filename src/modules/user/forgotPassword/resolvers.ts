@@ -1,10 +1,14 @@
 import * as yup from "yup";
 
+import db from "../../../knex";
 import { ResolverMap } from "../../../types/graphql-utils";
-import User from "../../../models/User";
 import { expiredKeyError } from "./errorMessages";
 import { registerPasswordValidation } from "../../../yupSchemas";
 import { formatYupError } from "../../../utils/formatYupError";
+import createForgotPasswordLink from "./logic/createForgotPasswordLink";
+import extractUserIdFromForgotPassKey from "./logic/extractUserIdFromForgotPassKey";
+import deleteForgotPassKey from "./logic/deleteForgotPassKey";
+import hashPassword from "../shared/logic/hashPassword";
 
 const schema = yup.object().shape({
   newPassword: registerPasswordValidation
@@ -15,15 +19,15 @@ export const resolvers: ResolverMap = {
     sendForgotPasswordEmail: async (
       _,
       { email }: GQL.ISendForgotPasswordEmailOnMutationArguments,
-      __
+      { redis, dataloaders }
     ) => {
-      const user = await User.query()
-        .where({ email })
-        .first();
-      if (!user) {
+      const existingUser = await dataloaders.userByEmail.load(email);
+
+      if (!existingUser) {
         return false;
       }
-      await User.createForgotPasswordLink(user.id);
+
+      await createForgotPasswordLink(existingUser.id, redis);
       // @todo send email with link
 
       return true;
@@ -31,13 +35,13 @@ export const resolvers: ResolverMap = {
     forgotPasswordChange: async (
       _,
       { newPassword, key }: GQL.IForgotPasswordChangeOnMutationArguments,
-      __
+      { redis }
     ) => {
-      const userId = await User.extractUserIdFromForgotPassKey(key);
+      const userId = await extractUserIdFromForgotPassKey(key, redis);
+
       if (!userId) {
         return [{ path: "key", message: expiredKeyError }];
       }
-
       // check that new password is valid
       try {
         await schema.validate({ newPassword }, { abortEarly: false });
@@ -45,13 +49,12 @@ export const resolvers: ResolverMap = {
         return formatYupError(err);
       }
 
+      const hashedPassword = await hashPassword(newPassword);
       await Promise.all([
-        User.query()
-          .update({
-            password: newPassword
-          })
+        db("users")
+          .update({ password: hashedPassword })
           .where({ id: userId }),
-        User.deleteForgotPassKey(key)
+        deleteForgotPassKey(key, redis)
       ]);
 
       return null;

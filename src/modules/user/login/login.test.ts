@@ -2,11 +2,11 @@ import * as faker from "faker";
 import * as jwt from "jsonwebtoken";
 
 import { invalidLogin, confirmEmailError } from "./errorMessages";
-import User from "../../../models/User";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
 import { redis } from "../../../redis";
 import { userTokenVersionPrefix } from "../../../constants";
 import { TokenPayload } from "../../../types/graphql-utils";
+import db from "../../../knex";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
@@ -41,7 +41,7 @@ describe("login", () => {
 
     await loginExpectError(clientApollo, email, password, confirmEmailError);
 
-    await User.query()
+    await db("users")
       .update({ confirmed: true })
       .where({ email });
 
@@ -65,10 +65,8 @@ describe("login", () => {
       throw new Error("Token is malformed");
     }
     // make sure token id = user id
-    const idLookupUser = await User.query()
-      .where({
-        id: decoded.id
-      })
+    const idLookupUser = await db("users")
+      .where({ id: decoded.id })
       .first();
     if (idLookupUser) {
       expect(idLookupUser.email as string).toEqual(email);

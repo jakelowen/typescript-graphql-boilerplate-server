@@ -1,7 +1,8 @@
 import * as faker from "faker";
+import * as bcrypt from "bcryptjs";
 
 import { TestClientApollo } from "../../../utils/TestClientApollo";
-import User from "../../../models/User";
+import db from "../../../knex";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
@@ -10,12 +11,14 @@ const password = faker.internet.password();
 let userId: string;
 
 beforeAll(async () => {
-  const user = await User.query().insert({
-    email,
-    password,
-    confirmed: true
-  });
-  userId = user.id;
+  const user = await db("users")
+    .insert({
+      email,
+      password: await bcrypt.hash(password, 10),
+      confirmed: true
+    })
+    .returning("*");
+  userId = user[0].id;
 });
 
 describe("logout", () => {
@@ -37,7 +40,6 @@ describe("logout", () => {
     await client.login(email, password);
 
     const response = (await client.me()) as any;
-
     expect(response.data.me.email).toEqual(email);
     expect(response.data.me.id).toEqual(userId);
   });

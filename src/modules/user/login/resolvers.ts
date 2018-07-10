@@ -1,24 +1,18 @@
-import User from "../../../models/User";
 import { ResolverMap } from "../../../types/graphql-utils";
-import { invalidLogin, confirmEmailError } from "./errorMessages";
-
-const errorResponse = [
-  {
-    path: "email",
-    message: invalidLogin
-  }
-];
+import { errorResponse, confirmEmailError } from "./errorMessages";
+import verifyPassword from "./logic/verifyPassword";
+import getCurrentValidTokenVersion from "./logic/getCurrentValidTokenVersion";
+import generateToken from "./logic/generateToken";
 
 export const resolvers: ResolverMap = {
   Mutation: {
     login: async (
       _,
       { email, password }: GQL.ILoginOnMutationArguments,
-      __
+      { redis, dataloaders }
     ) => {
-      const existingUser = await User.query()
-        .where({ email })
-        .first();
+      const existingUser = await dataloaders.userByEmail.load(email);
+
       if (!existingUser) {
         return { error: errorResponse };
       }
@@ -27,11 +21,22 @@ export const resolvers: ResolverMap = {
         return { error: [{ path: "email", message: confirmEmailError }] };
       }
 
-      if (!(await existingUser.verifyPassword(password))) {
+      if (!(await verifyPassword(existingUser.password, password))) {
         return { error: errorResponse };
       }
 
-      return { login: existingUser.loginToken };
+      // passes all checks, proceed with login
+      const currentValidTokenVersion = await getCurrentValidTokenVersion(
+        existingUser.id,
+        redis
+      );
+
+      const loginToken = generateToken(
+        existingUser.id,
+        currentValidTokenVersion
+      );
+
+      return { login: loginToken };
     }
   }
 };

@@ -9,7 +9,7 @@ import * as Redis from "ioredis";
 import { redis } from "./redis";
 import { confirmEmail } from "./routes/confirmEmail";
 import { genSchema } from "./utils/generateSchema";
-import db from "./knex";
+import dataloaders from "./connectors/dataloaders";
 import customJWTmiddleware, {
   parseToken,
   validateTokenVersion
@@ -35,19 +35,18 @@ export const startServer = async () => {
           redis,
           user: connection.context.user,
           pubsub,
-          db
+          dataloaders: dataloaders()
         };
       }
       // else return the normal conext
       // console.log(request);
       return {
         redis,
-        url: request.protocol + "://" + request.get("host"),
-        // session: request.session,
+        url: request.protocol + "://" + request.get("host"), // session: request.session,
         user: request.user,
         req: request,
         pubsub,
-        db
+        dataloaders: dataloaders()
       };
       // }
     }

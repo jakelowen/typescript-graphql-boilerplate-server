@@ -1,7 +1,8 @@
 import * as jwt from "jsonwebtoken";
 import * as faker from "faker";
+import * as bcrypt from "bcryptjs";
 
-import User from "../../../models/User";
+import db from "../../../knex";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
 import { redis } from "../../../redis";
 import { userTokenVersionPrefix } from "../../../constants";
@@ -13,12 +14,14 @@ const password = faker.internet.password();
 let userId: string;
 
 beforeAll(async () => {
-  const user = await User.query().insert({
-    email,
-    password,
-    confirmed: true
-  });
-  userId = user.id;
+  const user = await db("users")
+    .insert({
+      email,
+      password: await bcrypt.hash(password, 10),
+      confirmed: true
+    })
+    .returning("*");
+  userId = user[0].id;
 });
 
 describe("me", () => {
@@ -68,4 +71,22 @@ describe("me", () => {
     const response = (await client.me()) as any;
     expect(response.data.me).toBeNull();
   });
+
+  // test("permissions test temp", async () => {
+  //   const team = await Team.query().insert({ name: "fooTeam" });
+  //   const permission = await Permission.query().insert({ name: "Admin" });
+  //   await GrantedTeamPermission.query().insert({
+  //     teamId: team.id,
+  //     userId,
+  //     permissionId: permission.id
+  //   });
+
+  //   const foo = await User.query()
+  //     .eager(
+  //       "[grantedTeamPermissions, grantedTeamPermissions.[team, permission]]"
+  //     )
+  //     .select();
+  //   console.log(JSON.stringify(foo, null, "\t"));
+  //   expect(foo).toEqual("bar");
+  // });
 });

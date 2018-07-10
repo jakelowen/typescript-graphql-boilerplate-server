@@ -1,5 +1,6 @@
 import { Redis } from "ioredis";
 import { RedisPubSub } from "graphql-redis-subscriptions";
+import * as DataLoader from "dataloader";
 
 export interface TokenPayload {
   id: string;
@@ -12,6 +13,10 @@ export interface Session extends Express.Session {
   userId?: string;
 }
 
+export interface DataLoaders {
+  [key: string]: DataLoader<string, any>;
+}
+
 export interface Context {
   redis: Redis;
   url: string;
@@ -21,6 +26,7 @@ export interface Context {
   };
   req: Express.Request;
   pubsub: RedisPubSub;
+  dataloaders: DataLoaders;
 }
 
 export type Resolver = (

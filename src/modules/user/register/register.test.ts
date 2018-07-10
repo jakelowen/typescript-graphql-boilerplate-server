@@ -1,13 +1,13 @@
 import * as faker from "faker";
 
-import User from "../../../models/User";
+import db from "../../../knex";
+import { TestClientApollo } from "../../../utils/TestClientApollo";
 import {
   duplicateEmail,
   emailNotLongEnough,
-  invalidEmail,
-  passwordNotLongEnough
+  invalidEmail
 } from "./errorMessages";
-import { TestClientApollo } from "../../../utils/TestClientApollo";
+import { passwordNotLongEnough } from "../shared/errorMessages";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
@@ -23,7 +23,7 @@ describe("Register User", async () => {
       register: { register: null, error: null }
     });
     // const users = await User.find({ where: { email } });
-    const users = await User.query().where({ email });
+    const users = await db("users").where({ email }); // User.query().where({ email });
     expect(users).toHaveLength(1);
     const user = users[0];
     expect(user.email).toEqual(email);

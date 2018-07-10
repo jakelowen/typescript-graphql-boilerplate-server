@@ -7,9 +7,9 @@
 // websocket auth: https://www.apollographql.com/docs/react/advanced/subscriptions.html#authentication
 import * as faker from "faker";
 import gql from "graphql-tag";
-import User from "../../models/User";
+// import User from "../../models/User";
 import { TestClientApollo } from "../../utils/TestClientApollo";
-
+import db from "../../knex";
 faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
 const password = faker.internet.password();
@@ -31,7 +31,7 @@ describe("subscriptions", () => {
     async done => {
       const client = new TestClientApollo(process.env.TEST_HOST as string);
       await client.register(email, password);
-      await User.query()
+      await db("users")
         .update({ confirmed: true })
         .where({ email });
       await client.login(email, password);
