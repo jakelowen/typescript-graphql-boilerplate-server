@@ -1,4 +1,4 @@
-import { Redis } from "../../../../../node_modules/@types/ioredis";
+import { Redis } from "ioredis";
 import { forgotPasswordPrefix } from "../../../../constants";
 
 export default async (key: string, redis: Redis) => {

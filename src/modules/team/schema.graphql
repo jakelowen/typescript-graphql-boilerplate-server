@@ -1,0 +1,116 @@
+# the basic type definition
+type Team {
+  id: String!
+  name: String!
+}
+# all the ways we want to filter these.
+# Uses filterQuery snippets
+input TeamWhereInput {
+  AND: [TeamWhereInput!]
+  OR: [TeamWhereInput!]
+
+  id_is: String
+  id_not: String
+  id_in: [String!]
+  id_not_in: [String!]
+  id_lt: String
+  id_lte: String
+  id_gt: String
+  id_gte: String
+  id_contains: String
+  id_not_contains: String
+  id_starts_with: String
+  id_not_starts_with: String
+  id_ends_with: String
+  id_not_ends_with: String
+
+  name_is: String
+  name_not: String
+  name_in: [String!]
+  name_not_in: [String!]
+  name_lt: String
+  name_lte: String
+  name_gt: String
+  name_gte: String
+  name_contains: String
+  name_not_contains: String
+  name_starts_with: String
+  name_not_starts_with: String
+  name_ends_with: String
+  name_not_ends_with: String
+}
+# usually just the types unique identifier
+# used when grabbing only a single item
+input TeamWhereUniqueInput {
+  id: String!
+}
+# generic for ordering
+input TeamOrdering {
+  sort: TeamSort!
+  direction: Direction! = ASC
+}
+# the fields we want to allow sort by
+enum TeamSort {
+  name
+}
+# generic results type
+type TeamsResults {
+  error: [Error!]
+  items: [Team!]
+  pageInfo: PageInfo
+}
+
+type TeamResult {
+  error: [Error!]
+  team: Team
+}
+
+input CreateTeamInput {
+  name: String!
+}
+
+type CreateTeamResult {
+  error: [Error!]
+  team: Team
+}
+
+input UpdateTeamInput {
+  id: String!
+  name: String
+}
+
+type UpdateTeamResult {
+  error: [Error!]
+  team: Team
+}
+
+input DeleteTeamInput {
+  id: String!
+}
+
+type DeleteTeamResult {
+  error: [Error!]
+  team: Team
+}
+
+input TeamsInput {
+  where: TeamWhereInput
+  orderBy: [TeamOrdering!]
+  limit: Int
+  after: String
+}
+
+input TeamInput {
+  where: TeamWhereUniqueInput!
+}
+
+type Query {
+  teams(input: TeamsInput!): TeamsResults!
+  team(input: TeamInput!): TeamResult!
+}
+
+type Mutation {
+  createTeam(input: CreateTeamInput!): CreateTeamResult!
+  updateTeam(input: UpdateTeamInput!): UpdateTeamResult!
+  deleteTeam(input: DeleteTeamInput!): DeleteTeamResult!
+}

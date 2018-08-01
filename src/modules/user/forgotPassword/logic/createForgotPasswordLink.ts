@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import { Redis } from "../../../../../node_modules/@types/ioredis";
+import { Redis } from "ioredis";
 import { forgotPasswordPrefix } from "../../../../constants";
 
 export default async (userId: string, redis: Redis) => {

@@ -1,4 +1,4 @@
-import { Redis } from "../../../../../node_modules/@types/ioredis";
+import { Redis } from "ioredis";
 import { userTokenVersionPrefix } from "../../../../constants";
 
 export default async (userId: string, redis: Redis) => {

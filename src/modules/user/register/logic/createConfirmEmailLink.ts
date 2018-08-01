@@ -1,6 +1,6 @@
 import { v4 } from "uuid";
 
-import { Redis } from "../../../../../node_modules/@types/ioredis";
+import { Redis } from "ioredis";
 
 export default async (url: string, userId: string, redis: Redis) => {
   const id = v4();

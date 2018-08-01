@@ -26,7 +26,7 @@ beforeAll(async () => {
 });
 
 describe("me", () => {
-  test("return null if no valid token", async () => {
+  test.only("return null if no valid token", async () => {
     const client = new TestClientApollo(process.env.TEST_HOST as string);
     const response = (await client.me()) as any;
     expect(response.data.me).toBeNull();
