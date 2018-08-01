@@ -1,13 +1,14 @@
-import base64 from "base-64";
+import * as base64 from "base-64";
 import { map } from "lodash";
+import db from "../../knex";
+import * as Knex from "knex";
 
 export const paginator = async (
-  db,
-  query,
-  orderBy,
-  limit,
-  after,
-  uniqueColumn
+  query: Knex.QueryBuilder,
+  orderBy: any,
+  limit: number | undefined,
+  after: string,
+  uniqueColumn: string
 ) => {
   // treat original query as subquery (includes filters)
   const paginationQuery = db.select().from(query.clone().as("filters"));
@@ -22,7 +23,7 @@ export const paginator = async (
     // let rawCompositeColumns
     const keys = map(orderBy, "sort");
     const whereRawValues = decodedCursor.values
-      .map(value => `'${value}'`)
+      .map((value: string) => `'${value}'`)
       .join(",");
     const whereRawComposite = `(${keys.join()}) >= (${whereRawValues})`;
     paginationQuery.whereRaw(whereRawComposite);
@@ -44,22 +45,28 @@ export const paginator = async (
     paginationQuery.limit(limit + 1);
   }
 
-  let [items, [countResults]] = await Promise.all([
-    paginationQuery,
-    query.count()
-  ]);
+  // I know following works, but failed linting. next 2 blocks are attempt to break it out.
+  // let [items, [countResults]] = await Promise.all([
+  //   paginationQuery,
+  //   query.count()
+  // ]);
+
+  const preResults = await Promise.all([paginationQuery, query.count()]);
+
+  let items = preResults[0];
+  const countResults = preResults[1][0];
 
   // encode cursor if necessary
   let encodedCursor;
   if (items.length > limit) {
-    const values = map(orderBy, ordering => items[limit][ordering.sort]);
+    const values = map(
+      orderBy,
+      ordering => items[limit as number][ordering.sort]
+    );
     // add uniqueColumn to values
     values.push(items[limit][uniqueColumn]);
     orderBy.push({ sort: uniqueColumn, direction: "ASC" });
-    const cursorPayload = {
-      orderBy,
-      values
-    };
+    const cursorPayload = { orderBy, values };
     // we have a next page - make a cursor
     encodedCursor = base64.encode(JSON.stringify(cursorPayload));
     items = items.slice(0, limit);
@@ -69,7 +76,8 @@ export const paginator = async (
     items,
     pageInfo: {
       nextCursor: encodedCursor,
-      totalCount: countResults.count
+      totalCount: countResults.count,
+      fromCache: false
     }
   };
 };

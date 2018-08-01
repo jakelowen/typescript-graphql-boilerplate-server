@@ -12,32 +12,32 @@ input TeamWhereInput {
   id_is: String
   id_not: String
   id_in: [String!]
-  id_not_in: [String!]
+  id_notin: [String!]
   id_lt: String
   id_lte: String
   id_gt: String
   id_gte: String
   id_contains: String
-  id_not_contains: String
-  id_starts_with: String
-  id_not_starts_with: String
-  id_ends_with: String
-  id_not_ends_with: String
+  id_notcontains: String
+  id_startswith: String
+  id_notstartswith: String
+  id_endswith: String
+  id_notendswith: String
 
   name_is: String
   name_not: String
   name_in: [String!]
-  name_not_in: [String!]
+  name_notin: [String!]
   name_lt: String
   name_lte: String
   name_gt: String
   name_gte: String
   name_contains: String
-  name_not_contains: String
-  name_starts_with: String
-  name_not_starts_with: String
-  name_ends_with: String
-  name_not_ends_with: String
+  name_notcontains: String
+  name_startswith: String
+  name_notstartswith: String
+  name_endswith: String
+  name_notendswith: String
 }
 # usually just the types unique identifier
 # used when grabbing only a single item
