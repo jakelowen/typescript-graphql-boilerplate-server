@@ -8,6 +8,7 @@ import {
 import mapToMany from "../utils/mapToMany";
 import mapTo from "../utils/mapTo";
 import { users } from "../types/dbschema";
+import batchLoadPages from "../modules/pagination/batchLoadPages";
 
 export default () => ({
   userById: new DataLoader((ids: string[]) =>
@@ -20,5 +21,6 @@ export default () => ({
     userTeamPermissionsByUserIds(ids).then(
       mapToMany(ids, (x: TeamPermissionReturn) => x.userId)
     )
-  )
+  ),
+  pageLoader: new DataLoader((keys: string[]) => batchLoadPages(keys))
 });
