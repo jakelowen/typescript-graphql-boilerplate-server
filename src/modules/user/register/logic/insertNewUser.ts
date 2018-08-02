@@ -1,4 +1,4 @@
-import insertNewUser from "../../../../connectors/insertNewUser";
+import insertNewUser from "../../shared/connectors/insertNewUser";
 import { DataLoaders } from "../../../../types/graphql-utils";
 
 export default async (

@@ -1,11 +1,6 @@
-// import * as faker from "faker";
-// import * as Redis from "ioredis";
-
 import db from "../../knex";
 import { filterQuery } from "./filterQuery";
 
-// beforeAll(async () => {});
-// afterAll(async () => db.destroy());
 const tableName = "foo";
 
 describe("Filter Query Ops", () => {

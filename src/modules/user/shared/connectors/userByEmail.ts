@@ -1,5 +1,5 @@
-import db from "../knex";
-import { users } from "../types/dbschema";
+import db from "../../../../knex";
+import { users } from "../../../../types/dbschema";
 
 // load a single user by id
 export const userByEmail = async (email: string): Promise<users> =>

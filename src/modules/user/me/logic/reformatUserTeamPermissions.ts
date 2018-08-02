@@ -1,5 +1,5 @@
 import { map } from "lodash";
-import { TeamPermissionReturn } from "../../../../connectors/userTeamPermissionsByUserId";
+import { TeamPermissionReturn } from "../../shared/connectors/userTeamPermissionsByUserId";
 
 export interface TeamPermissions {
   [teamId: string]: string[];
