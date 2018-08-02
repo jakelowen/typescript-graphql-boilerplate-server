@@ -5,7 +5,6 @@ import { filterQuery } from "./filterQuery";
 import { paginator } from "./paginator";
 
 export default async (key: string) => {
-  // it would be easy to cache with redis here...
   // attempt to load key from redis
   const cachedDataRaw = await redis.get(key);
   let data;

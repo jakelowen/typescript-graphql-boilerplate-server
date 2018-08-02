@@ -1,7 +1,5 @@
 ## NEXT UP
 
-- tests for pagination/loadSinglePage
-- restructure dataloaders. Helper functions should live in modules. Dataloader file itself is fine, but probably doesnt need own folder. Just like I use logic folder in each module, use a connector folder as well.
 - explore idea: in the same way I have a reusable structure for pages, can I do the same for singular fetches to avoid boilerplate? Like PageInfo type, but for singular
 - add teams resolvers for full crud
 - add userPermissions query
