@@ -9,7 +9,7 @@ import * as Redis from "ioredis";
 import { redis } from "./redis";
 import { confirmEmail } from "./routes/confirmEmail";
 import { genSchema } from "./utils/generateSchema";
-import dataloaders from "./dataloaders";
+import dataloaders from "./modules/shared/dataloaders";
 import customJWTmiddleware, {
   parseToken,
   validateTokenVersion

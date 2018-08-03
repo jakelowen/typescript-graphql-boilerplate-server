@@ -98,6 +98,7 @@ input TeamsInput {
   orderBy: [TeamOrdering!]
   limit: Int
   after: String
+  ttl: Int
 }
 
 input TeamInput {
@@ -105,8 +106,8 @@ input TeamInput {
 }
 
 type Query {
-  teams(input: TeamsInput!): TeamsResults!
-  team(input: TeamInput!): TeamResult!
+  teams(input: TeamsInput): TeamsResults!
+  team(input: TeamInput): TeamResult!
 }
 
 type Mutation {

@@ -1,33 +1,28 @@
 import generateDeterministicCacheId from "./generateDeterministicCacheId";
 import decodeDeterministicCacheId from "./decodeDeterministicCacheId";
-import db from "../../knex";
+import db from "../../../knex";
 import loadSinglePage from "./loadSinglePage";
 import * as faker from "faker";
 
-// const fetchPayload = {
-//   table: {
-//     name: 'organizations',
-//     uniqueColumn: 'id',
-//   },
-//   where,
-//   orderBy,
-//   limit,
-//   after,
-//   ttl: 120,
-// };
-
-beforeEach(async () => Promise.all([db.raw("TRUNCATE TABLE teams CASCADE")]));
+faker.seed(Date.now() + process.hrtime()[1]);
 
 describe("loadSinglePage / paginator", () => {
   test("uses filter query correctly", async () => {
+    const randomLeader = faker.random.number(1000);
     const teams = [
-      { id: faker.random.uuid(), name: "a" },
-      { id: faker.random.uuid(), name: "b" }
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_aa_${faker.company.companyName()}`
+      },
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_zz_${faker.company.companyName()}`
+      }
     ];
     await db("teams").insert(teams);
     const fetchPayload = {
       table: { name: "teams", uniqueColumn: "id" },
-      where: { name_is: "a" }
+      where: { name_is: teams[0].name }
     };
 
     const results = await loadSinglePage(
@@ -42,14 +37,22 @@ describe("loadSinglePage / paginator", () => {
   });
 
   test("uses limit / order asc correctly", async () => {
+    const randomLeader = faker.random.number(1000);
     const teams = [
-      { id: faker.random.uuid(), name: "a" },
-      { id: faker.random.uuid(), name: "b" }
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_aa_${faker.company.companyName()}`
+      },
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_zz_${faker.company.companyName()}`
+      }
     ];
     await db("teams").insert(teams);
     const fetchPayload = {
       table: { name: "teams", uniqueColumn: "id" },
       limit: 1,
+      where: { name_startswith: randomLeader },
       orderBy: [{ sort: "name", direction: "ASC" }]
     };
 
@@ -77,14 +80,22 @@ describe("loadSinglePage / paginator", () => {
   });
 
   test("uses limit / order DESC correctly", async () => {
+    const randomLeader = faker.random.number(1000);
     const teams = [
-      { id: faker.random.uuid(), name: "a" },
-      { id: faker.random.uuid(), name: "b" }
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_aa_${faker.company.companyName()}`
+      },
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_zz_${faker.company.companyName()}`
+      }
     ];
     await db("teams").insert(teams);
     const fetchPayload = {
       table: { name: "teams", uniqueColumn: "id" },
       limit: 1,
+      where: { name_startswith: randomLeader },
       orderBy: [{ sort: "name", direction: "DESC" }]
     };
 
@@ -111,21 +122,70 @@ describe("loadSinglePage / paginator", () => {
     expect(results.pageInfo.totalCount).toBe("2");
   });
 
-  test("uses caching/ttl correctly", async () => {
+  test("pagination works correctly", async () => {
+    const randomLeader = faker.random.number(1000);
     const teams = [
-      { id: faker.random.uuid(), name: "a" },
-      { id: faker.random.uuid(), name: "b" }
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_aa_${faker.company.companyName()}`
+      },
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_zz_${faker.company.companyName()}`
+      }
     ];
     await db("teams").insert(teams);
     const fetchPayload = {
       table: { name: "teams", uniqueColumn: "id" },
-      ttl: 120
+      limit: 1,
+      where: { name_startswith: randomLeader },
+      orderBy: [{ sort: "name", direction: "ASC" }]
     };
 
     const results = await loadSinglePage(
       generateDeterministicCacheId(fetchPayload)
     );
-    expect(results.items.length).toBe(2);
+    expect(results.items.length).toBe(1);
+    expect(results.items[0].name).toEqual(teams[0].name);
+
+    const fetchPayloadNextPage = {
+      table: { name: "teams", uniqueColumn: "id" },
+      after: results.pageInfo.nextCursor,
+      limit: 1,
+      where: { name_startswith: randomLeader },
+      orderBy: [{ sort: "name", direction: "ASC" }]
+    };
+
+    const results2 = await loadSinglePage(
+      generateDeterministicCacheId(fetchPayloadNextPage)
+    );
+    expect(results2.items.length).toBe(1);
+    expect(results2.items[0].name).toEqual(teams[1].name);
+  });
+
+  test("uses caching/ttl correctly", async () => {
+    const randomLeader = faker.random.number(1000);
+    const teams = [
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_aa_${faker.company.companyName()}`
+      },
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_zz_${faker.company.companyName()}`
+      }
+    ];
+    await db("teams").insert(teams);
+    const fetchPayload = {
+      table: { name: "teams", uniqueColumn: "id" },
+      ttl: 120,
+      where: { name_startswith: randomLeader }
+    };
+
+    const results = await loadSinglePage(
+      generateDeterministicCacheId(fetchPayload)
+    );
+    expect(results.items.length).toBe(2); //
     expect(results.pageInfo.fromCache).toBe(false);
     expect(results.pageInfo.totalCount).toBe("2");
 

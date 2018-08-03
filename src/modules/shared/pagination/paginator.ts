@@ -1,6 +1,6 @@
 import * as base64 from "base-64";
 import { map } from "lodash";
-import db from "../../knex";
+import db from "../../../knex";
 import * as Knex from "knex";
 
 export const paginator = async (
