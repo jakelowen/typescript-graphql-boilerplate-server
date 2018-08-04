@@ -1,6 +1,6 @@
-import { redis } from "../../../redis";
-import db from "../../../knex";
-import decodeDeterministicCacheId from "./decodeDeterministicCacheId";
+import { redis } from "../../../../redis";
+import db from "../../../../knex";
+import decodeDeterministicCacheId from "../logic/decodeDeterministicCacheId";
 import { filterQuery } from "./filterQuery";
 import { paginator } from "./paginator";
 
@@ -9,10 +9,7 @@ export default async (key: string) => {
   const fetchPayload = decodeDeterministicCacheId(key);
   let data;
   // skip cache check if ttl is 0
-  const cachedDataRaw =
-    !fetchPayload.ttl || fetchPayload.ttl === 0
-      ? undefined
-      : await redis.get(key);
+  const cachedDataRaw = fetchPayload.noCache ? undefined : await redis.get(key);
 
   if (cachedDataRaw) {
     data = JSON.parse(cachedDataRaw);
@@ -30,7 +27,7 @@ export default async (key: string) => {
       fetchPayload.table.uniqueColumn
     );
     // after db load, store in redis. fetchPayload would need TTL value
-    if (fetchPayload.ttl && fetchPayload.ttl > 0) {
+    if (fetchPayload.ttl) {
       await redis.set(key, JSON.stringify(data), "EX", fetchPayload.ttl);
     }
     data.pageInfo.fromCache = false;

@@ -4,7 +4,7 @@ import db from "../../knex";
 // import loadSinglePage from "./loadSinglePage";
 import * as faker from "faker";
 import { TestClientApollo } from "../../utils/TestClientApollo";
-import gql from "../../../node_modules/graphql-tag";
+import gql from "graphql-tag";
 // import { redis } from "../../redis";
 
 faker.seed(Date.now() + process.hrtime()[1]);
@@ -43,7 +43,7 @@ describe("Teams", () => {
       variables: {
         teamsinput: {
           where: { name_startswith: randomLeader },
-          ttl: 0,
+          noCache: true,
           orderBy: [{ sort: "name", direction: "ASC" }]
         }
       }

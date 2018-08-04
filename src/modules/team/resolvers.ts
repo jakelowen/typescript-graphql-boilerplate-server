@@ -1,5 +1,5 @@
 import { ResolverMap } from "../../types/graphql-utils";
-import generateDeterministicCacheId from "../shared/pagination/generateDeterministicCacheId";
+import loadTeams from "./logic/loadTeams";
 
 export const resolvers: ResolverMap = {
   Mutation: {
@@ -22,17 +22,7 @@ export const resolvers: ResolverMap = {
       return null;
     },
     async teams(_, args, ctx) {
-      const payload = {
-        table: {
-          name: "teams",
-          uniqueColumn: "id"
-        },
-        ...args.input
-      };
-      const foo = await ctx.dataloaders.pageLoader.load(
-        generateDeterministicCacheId(payload)
-      );
-      return foo;
+      return loadTeams(args, ctx);
     }
   }
 };

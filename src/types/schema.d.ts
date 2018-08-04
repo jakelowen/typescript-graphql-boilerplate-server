@@ -2,85 +2,271 @@
 // graphql typescript definitions
 
 declare namespace GQL {
-  interface IGraphQLResponseRoot {
-    data?: IQuery | IMutation | ISubscription;
-    errors?: Array<IGraphQLResponseError>;
-  }
+interface IGraphQLResponseRoot {
+data?: IQuery | IMutation | ISubscription;
+errors?: Array<IGraphQLResponseError>;
+}
 
-  interface IGraphQLResponseError {
-    /** Required for all errors */
-    message: string;
-    locations?: Array<IGraphQLResponseErrorLocation>;
-    /** 7.2.2 says 'GraphQL servers may provide additional entries to error' */
-    [propName: string]: any;
-  }
+interface IGraphQLResponseError {
+/** Required for all errors */
+message: string;
+locations?: Array<IGraphQLResponseErrorLocation>;
+/** 7.2.2 says 'GraphQL servers may provide additional entries to error' */
+[propName: string]: any;
+}
 
-  interface IGraphQLResponseErrorLocation {
-    line: number;
-    column: number;
-  }
+interface IGraphQLResponseErrorLocation {
+line: number;
+column: number;
+}
 
-  interface IQuery {
-    __typename: "Query";
-    me: IUser | null;
-    hello: string;
-  }
+interface IQuery {
+__typename: "Query";
+teams: ITeamsResults;
+team: ITeamResult;
+me: IUser | null;
+}
 
-  interface IHelloOnQueryArguments {
-    name?: string | null;
-  }
+interface ITeamsOnQueryArguments {
+input?: ITeamsInput | null;
+}
 
-  interface IUser {
-    __typename: "User";
-    id: string;
-    email: string;
-    subscriptionToken: string;
-  }
+interface ITeamOnQueryArguments {
+input?: ITeamInput | null;
+}
 
-  interface IMutation {
-    __typename: "Mutation";
-    sendForgotPasswordEmail: boolean | null;
-    forgotPasswordChange: Array<IError>;
-    login: Array<IError>;
-    logout: boolean | null;
-    register: Array<IError>;
-  }
+interface ITeamsInput {
+where?: ITeamWhereInput | null;
+orderBy: Array<ITeamOrdering>;
+limit?: number | null;
+after?: string | null;
+noCache?: boolean | null;
+}
 
-  interface ISendForgotPasswordEmailOnMutationArguments {
-    email: string;
-  }
+/**
+ * all the ways we want to filter these.
+* Uses filterQuery snippets
+ */
+  interface ITeamWhereInput {
+AND: Array<ITeamWhereInput>;
+OR: Array<ITeamWhereInput>;
+id_is?: string | null;
+id_not?: string | null;
+id_in: Array<string>;
+id_notin: Array<string>;
+id_lt?: string | null;
+id_lte?: string | null;
+id_gt?: string | null;
+id_gte?: string | null;
+id_contains?: string | null;
+id_notcontains?: string | null;
+id_startswith?: string | null;
+id_notstartswith?: string | null;
+id_endswith?: string | null;
+id_notendswith?: string | null;
+name_is?: string | null;
+name_not?: string | null;
+name_in: Array<string>;
+name_notin: Array<string>;
+name_lt?: string | null;
+name_lte?: string | null;
+name_gt?: string | null;
+name_gte?: string | null;
+name_contains?: string | null;
+name_notcontains?: string | null;
+name_startswith?: string | null;
+name_notstartswith?: string | null;
+name_endswith?: string | null;
+name_notendswith?: string | null;
+}
 
-  interface IForgotPasswordChangeOnMutationArguments {
-    newPassword: string;
-    key: string;
-  }
+/**
+ * generic for ordering
+ */
+  interface ITeamOrdering {
+sort: TeamSort;
 
-  interface ILoginOnMutationArguments {
-    email: string;
-    password: string;
-  }
+/**
+ * @default ASC
+ */
+direction: Direction;
+}
 
-  interface IRegisterOnMutationArguments {
-    email: string;
-    password: string;
-  }
+/**
+ * the fields we want to allow sort by
+ */
+  enum TeamSort {
+name = 'name'
+};
 
-  interface IError {
-    __typename: "Error";
-    path: string;
-    message: string;
-  }
+enum Direction {
+ASC = 'ASC',
+DESC = 'DESC'
+};
 
-  interface ISubscription {
-    __typename: "Subscription";
-    counter: ICounter;
-  }
+/**
+ * generic results type
+ */
+  interface ITeamsResults {
+__typename: "TeamsResults";
+error: Array<IError>;
+items: Array<ITeam>;
+pageInfo: IPageInfo | null;
+}
 
-  interface ICounter {
-    __typename: "Counter";
-    count: number;
-    countStr: string | null;
-  }
+interface IError {
+__typename: "Error";
+path: string;
+message: string;
+}
+
+/**
+ * the basic type definition
+ */
+  interface ITeam {
+__typename: "Team";
+id: string;
+name: string;
+}
+
+interface IPageInfo {
+__typename: "PageInfo";
+nextCursor: string | null;
+fromCache: boolean | null;
+totalCount: number | null;
+}
+
+interface ITeamInput {
+where: ITeamWhereUniqueInput;
+}
+
+/**
+ * usually just the types unique identifier
+* used when grabbing only a single item
+ */
+  interface ITeamWhereUniqueInput {
+id: string;
+}
+
+interface ITeamResult {
+__typename: "TeamResult";
+error: Array<IError>;
+team: ITeam | null;
+}
+
+interface IUser {
+__typename: "User";
+id: string;
+email: string;
+teamPermissions: Array<ITeamPermission> | null;
+}
+
+interface ITeamPermission {
+__typename: "TeamPermission";
+team: string;
+permissions: Array<string> | null;
+}
+
+interface IMutation {
+__typename: "Mutation";
+createTeam: ICreateTeamResult;
+updateTeam: IUpdateTeamResult;
+deleteTeam: IDeleteTeamResult;
+sendForgotPasswordEmail: boolean | null;
+forgotPasswordChange: Array<IError>;
+login: ILoginPayload | null;
+logout: boolean | null;
+register: IRegisterPayload;
+}
+
+interface ICreateTeamOnMutationArguments {
+input: ICreateTeamInput;
+}
+
+interface IUpdateTeamOnMutationArguments {
+input: IUpdateTeamInput;
+}
+
+interface IDeleteTeamOnMutationArguments {
+input: IDeleteTeamInput;
+}
+
+interface ISendForgotPasswordEmailOnMutationArguments {
+email: string;
+}
+
+interface IForgotPasswordChangeOnMutationArguments {
+newPassword: string;
+key: string;
+}
+
+interface ILoginOnMutationArguments {
+email: string;
+password: string;
+}
+
+interface IRegisterOnMutationArguments {
+email: string;
+password: string;
+}
+
+interface ICreateTeamInput {
+name: string;
+}
+
+interface ICreateTeamResult {
+__typename: "CreateTeamResult";
+error: Array<IError>;
+team: ITeam | null;
+}
+
+interface IUpdateTeamInput {
+id: string;
+name?: string | null;
+}
+
+interface IUpdateTeamResult {
+__typename: "UpdateTeamResult";
+error: Array<IError>;
+team: ITeam | null;
+}
+
+interface IDeleteTeamInput {
+id: string;
+}
+
+interface IDeleteTeamResult {
+__typename: "DeleteTeamResult";
+error: Array<IError>;
+team: ITeam | null;
+}
+
+interface ILoginPayload {
+__typename: "LoginPayload";
+error: Array<IError>;
+
+/**
+ * if present the auth token
+ */
+login: string | null;
+}
+
+interface IRegisterPayload {
+__typename: "RegisterPayload";
+error: Array<IError>;
+register: string | null;
+}
+
+interface ISubscription {
+__typename: "Subscription";
+counter: ICounter;
+}
+
+interface ICounter {
+__typename: "Counter";
+count: number;
+countStr: string | null;
+}
 }
 
 // tslint:enable

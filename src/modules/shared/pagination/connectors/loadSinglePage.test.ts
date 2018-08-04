@@ -1,6 +1,6 @@
-import generateDeterministicCacheId from "./generateDeterministicCacheId";
-import decodeDeterministicCacheId from "./decodeDeterministicCacheId";
-import db from "../../../knex";
+import generateDeterministicCacheId from "../logic/generateDeterministicCacheId";
+import decodeDeterministicCacheId from "../logic/decodeDeterministicCacheId";
+import db from "../../../../knex";
 import loadSinglePage from "./loadSinglePage";
 import * as faker from "faker";
 

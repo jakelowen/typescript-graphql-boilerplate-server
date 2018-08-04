@@ -7,8 +7,9 @@ import {
 } from "../user/shared/connectors/userTeamPermissionsByUserId";
 import mapToMany from "../../utils/mapToMany";
 import mapTo from "../../utils/mapTo";
-import { users } from "../../types/dbschema";
-import batchLoadPages from "./pagination/batchLoadPages";
+import { users, teams } from "../../types/dbschema";
+import batchLoadPages from "./pagination/connectors/batchLoadPages";
+import { teamsFromIds } from "../team/connectors/teamById";
 
 export default () => ({
   userById: new DataLoader((ids: string[]) =>
@@ -22,5 +23,8 @@ export default () => ({
       mapToMany(ids, (x: TeamPermissionReturn) => x.userId)
     )
   ),
-  pageLoader: new DataLoader((keys: string[]) => batchLoadPages(keys))
+  pageLoader: new DataLoader((keys: string[]) => batchLoadPages(keys)),
+  teamById: new DataLoader((ids: string[]) =>
+    teamsFromIds(ids).then(mapTo(ids, (x: teams) => x.id))
+  )
 });

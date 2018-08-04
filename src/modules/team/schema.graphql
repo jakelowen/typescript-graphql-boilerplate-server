@@ -98,7 +98,7 @@ input TeamsInput {
   orderBy: [TeamOrdering!]
   limit: Int
   after: String
-  ttl: Int
+  noCache: Boolean
 }
 
 input TeamInput {

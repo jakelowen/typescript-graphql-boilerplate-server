@@ -8,9 +8,10 @@ export interface PaginationArgs {
   };
   where?: any;
   orderBy?: any;
-  limit?: number;
+  limit?: number | undefined | null;
   after?: any;
-  ttl?: number;
+  ttl?: number | undefined | null;
+  noCache?: boolean | null | undefined;
 }
 
 export default (args: PaginationArgs) => base64.encode(stringify(args));

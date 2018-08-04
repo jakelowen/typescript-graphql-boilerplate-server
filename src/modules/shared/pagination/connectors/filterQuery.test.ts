@@ -1,4 +1,4 @@
-import db from "../../../knex";
+import db from "../../../../knex";
 import { filterQuery } from "./filterQuery";
 
 const tableName = "foo";
