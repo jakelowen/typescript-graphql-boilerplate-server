@@ -1,5 +1,6 @@
 import { ResolverMap } from "../../types/graphql-utils";
 import loadTeams from "./logic/loadTeams";
+import loadTeam from "./logic/loadTeam";
 
 export const resolvers: ResolverMap = {
   Mutation: {
@@ -17,9 +18,8 @@ export const resolvers: ResolverMap = {
     }
   },
   Query: {
-    team(root, args, ctx) {
-      console.log(root, args, ctx);
-      return null;
+    async team(_, args, ctx) {
+      return { team: await loadTeam(args, ctx) };
     },
     async teams(_, args, ctx) {
       return loadTeams(args, ctx);

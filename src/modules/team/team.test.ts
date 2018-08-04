@@ -51,4 +51,28 @@ describe("Teams", () => {
 
     expect((response.data as any).teams.items[0].id).toEqual(teams[0].id);
   });
+
+  test("single team search working", async () => {
+    const teams = [
+      { id: faker.random.uuid(), name: faker.company.companyName() }
+    ];
+
+    await db("teams").insert(teams);
+    const testClient = new TestClientApollo(process.env.TEST_HOST as string);
+
+    const response = await testClient.client.query({
+      query: gql`
+        query team($teaminput: TeamInput) {
+          team(input: $teaminput) {
+            team {
+              id
+              name
+            }
+          }
+        }
+      `,
+      variables: { teaminput: { where: { id: teams[0].id } } }
+    });
+    expect((response.data as any).team.team.id).toEqual(teams[0].id);
+  });
 });
