@@ -6,6 +6,7 @@ import { WebSocketLink } from "apollo-link-ws";
 import { getMainDefinition } from "apollo-utilities";
 import { InMemoryCache, NormalizedCacheObject } from "apollo-cache-inmemory";
 import { setContext } from "apollo-link-context";
+import { onError, ErrorLink } from "apollo-link-error";
 import gql from "graphql-tag";
 import * as fetch from "node-fetch";
 
@@ -14,6 +15,7 @@ export class TestClientApollo {
   token: any;
   client: ApolloClient<NormalizedCacheObject>;
   httpLink: HttpLink;
+  errorLink: any;
   wsLink: WebSocketLink;
   authLink: any;
   // options: { jar: any; withCredentials: boolean; json: true };
@@ -22,6 +24,19 @@ export class TestClientApollo {
     // this.options = { withCredentials: true, jar: rp.jar(), json: true };
     this.token = iToken;
     // console.log("!!! in constructor, ", this.url, this.token);
+    this.errorLink = onError(({ graphQLErrors, networkError }) => {
+      if (graphQLErrors) {
+        graphQLErrors.map(({ message, locations, path }) =>
+          console.log(
+            `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+          )
+        );
+      }
+
+      if (networkError) {
+        console.log(`[Network error]: ${networkError}`);
+      }
+    });
     this.httpLink = new HttpLink({ uri: this.url, fetch } as any);
     // credentials: "include"
 
@@ -59,7 +74,7 @@ export class TestClientApollo {
           return kind === "OperationDefinition" && operation === "subscription";
         },
         this.wsLink,
-        this.authLink.concat(this.httpLink)
+        this.authLink.concat(this.errorLink).concat(this.httpLink)
       ),
       cache: new InMemoryCache({ addTypename: false })
     });

@@ -75,4 +75,27 @@ describe("Teams", () => {
     });
     expect((response.data as any).team.team.id).toEqual(teams[0].id);
   });
+
+  test("create Team", async () => {
+    const newTeamName = faker.company.companyName();
+    // const teams = [{ id: faker.random.uuid(), name: faker.company.companyName() }];
+
+    // await db("teams").insert(teams);
+    const testClient = new TestClientApollo(process.env.TEST_HOST as string);
+
+    const response = await testClient.client.mutate({
+      mutation: gql`
+        mutation createTeam($input: CreateTeamInput!) {
+          createTeam(input: $input) {
+            team {
+              id
+              name
+            }
+          }
+        }
+      `,
+      variables: { input: { name: newTeamName } }
+    });
+    expect((response.data as any).createTeam.team.name).toEqual(newTeamName);
+  });
 });
