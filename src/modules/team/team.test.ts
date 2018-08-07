@@ -52,6 +52,47 @@ describe("Teams", () => {
     expect((response.data as any).teams.items[0].id).toEqual(teams[0].id);
   });
 
+  test("multi teams search working excludes deleted", async () => {
+    const randomLeader = faker.random.number(1000);
+    const teams = [
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_aa_${faker.company.companyName()}`,
+        deletedAt: db.fn.now()
+      },
+      {
+        id: faker.random.uuid(),
+        name: `${randomLeader}_zz_${faker.company.companyName()}`,
+        deletedAt: db.fn.now()
+      }
+    ];
+
+    await db("teams").insert(teams);
+    const testClient = new TestClientApollo(process.env.TEST_HOST as string);
+
+    const response = await testClient.client.query({
+      query: gql`
+        query teams($teamsinput: TeamsInput) {
+          teams(input: $teamsinput) {
+            items {
+              id
+              name
+            }
+          }
+        }
+      `,
+      variables: {
+        teamsinput: {
+          where: { name_startswith: randomLeader },
+          noCache: true,
+          orderBy: [{ sort: "name", direction: "ASC" }]
+        }
+      }
+    });
+
+    expect((response.data as any).teams.items.length).toBe(0);
+  });
+
   test("single team search working", async () => {
     const teams = [
       { id: faker.random.uuid(), name: faker.company.companyName() }
@@ -74,6 +115,34 @@ describe("Teams", () => {
       variables: { teaminput: { where: { id: teams[0].id } } }
     });
     expect((response.data as any).team.team.id).toEqual(teams[0].id);
+  });
+
+  test("single team search working excludes deleted Teams", async () => {
+    const teams = [
+      {
+        id: faker.random.uuid(),
+        name: faker.company.companyName(),
+        deletedAt: db.fn.now()
+      }
+    ];
+
+    await db("teams").insert(teams);
+    const testClient = new TestClientApollo(process.env.TEST_HOST as string);
+
+    const response = await testClient.client.query({
+      query: gql`
+        query team($teaminput: TeamInput) {
+          team(input: $teaminput) {
+            team {
+              id
+              name
+            }
+          }
+        }
+      `,
+      variables: { teaminput: { where: { id: teams[0].id } } }
+    });
+    expect((response.data as any).team.team).toBeNull();
   });
 
   test("create Team", async () => {

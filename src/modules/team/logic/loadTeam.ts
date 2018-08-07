@@ -1,7 +1,10 @@
 import { Context } from "../../../types/graphql-utils";
 
 export default async (args: GQL.ITeamOnQueryArguments, ctx: Context) => {
-  return args && args.input && args.input.where && args.input.where.id
-    ? ctx.dataloaders.teamById.load(args.input.where.id)
-    : null;
+  const team =
+    args && args.input && args.input.where && args.input.where.id
+      ? await ctx.dataloaders.teamById.load(args.input.where.id)
+      : null;
+
+  return team && team.deletedAt === null ? team : null;
 };

@@ -19,6 +19,9 @@ export default async (key: string) => {
     // now use example of voter search filter, pagination etc.
     let query = db.table(fetchPayload.table.name);
     query = filterQuery(query, fetchPayload.where);
+    // exclude deleted Records
+    query.where({ deletedAt: null });
+    // pagination
     data = await paginator(
       query,
       fetchPayload.orderBy,
