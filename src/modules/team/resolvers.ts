@@ -2,15 +2,15 @@ import { ResolverMap } from "../../types/graphql-utils";
 import loadTeams from "./logic/loadTeams";
 import loadTeam from "./logic/loadTeam";
 import createTeam from "./logic/createTeam";
+import updateTeam from "./logic/updateTeam";
 
 export const resolvers: ResolverMap = {
   Mutation: {
     createTeam(_, args, ctx) {
       return createTeam(args.input, ctx);
     },
-    updateTeam(root, args, ctx) {
-      console.log(root, args, ctx);
-      return null;
+    updateTeam(_, args, ctx) {
+      return updateTeam(args.input, ctx);
     },
     deleteTeam(root, args, ctx) {
       console.log(root, args, ctx);
