@@ -122,4 +122,30 @@ describe("Teams", () => {
     expect((response.data as any).updateTeam.team.name).toEqual(newTeamName);
     expect((response.data as any).updateTeam.team.id).toEqual(team.id);
   });
+
+  test("delete Team", async () => {
+    // const newTeamName = faker.company.companyName();
+    const team = { id: faker.random.uuid(), name: faker.company.companyName() };
+
+    await db("teams").insert(team);
+    const testClient = new TestClientApollo(process.env.TEST_HOST as string);
+    const response = await testClient.client.mutate({
+      mutation: gql`
+        mutation deleteTeam($input: DeleteTeamInput!) {
+          deleteTeam(input: $input) {
+            team {
+              id
+              name
+            }
+          }
+        }
+      `,
+      variables: { input: { id: team.id } }
+    });
+    expect((response.data as any).deleteTeam.team.id).toEqual(team.id);
+    const dbTeam = await db("teams")
+      .where({ id: team.id })
+      .first();
+    expect(dbTeam.deletedAt).not.toBeFalsy();
+  });
 });

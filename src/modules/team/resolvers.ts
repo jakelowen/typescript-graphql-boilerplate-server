@@ -3,6 +3,7 @@ import loadTeams from "./logic/loadTeams";
 import loadTeam from "./logic/loadTeam";
 import createTeam from "./logic/createTeam";
 import updateTeam from "./logic/updateTeam";
+import deleteTeam from "./logic/deleteTeam";
 
 export const resolvers: ResolverMap = {
   Mutation: {
@@ -12,9 +13,8 @@ export const resolvers: ResolverMap = {
     updateTeam(_, args, ctx) {
       return updateTeam(args.input, ctx);
     },
-    deleteTeam(root, args, ctx) {
-      console.log(root, args, ctx);
-      return null;
+    deleteTeam(_, args, ctx) {
+      return deleteTeam(args.input, ctx);
     }
   },
   Query: {
