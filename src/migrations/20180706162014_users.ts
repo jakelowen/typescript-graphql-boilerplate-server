@@ -11,6 +11,8 @@ exports.up = (knex: Knex): Promise<any> => {
       t.dateTime("updatedAt").nullable();
       t.dateTime("deletedAt").nullable();
 
+      t.string("firstName");
+      t.string("lastName");
       t.string("email").notNullable();
       t.text("password").notNullable();
       t.boolean("confirmed").defaultTo(false);

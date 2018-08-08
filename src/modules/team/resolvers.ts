@@ -4,6 +4,7 @@ import loadTeam from "./logic/loadTeam";
 import createTeam from "./logic/createTeam";
 import updateTeam from "./logic/updateTeam";
 import deleteTeam from "./logic/deleteTeam";
+import getTeamUsers from "./logic/getTeamUsers";
 
 export const resolvers: ResolverMap = {
   Mutation: {
@@ -23,6 +24,11 @@ export const resolvers: ResolverMap = {
     },
     async teams(_, args, ctx) {
       return loadTeams(args, ctx);
+    }
+  },
+  Team: {
+    async users(team, _, ctx) {
+      return getTeamUsers(team.id, ctx);
     }
   }
 };

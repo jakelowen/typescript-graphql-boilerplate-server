@@ -2,6 +2,7 @@
 type Team {
   id: String!
   name: String!
+  users: [User!]
 }
 # all the ways we want to filter these.
 # Uses filterQuery snippets

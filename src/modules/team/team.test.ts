@@ -5,6 +5,8 @@ import db from "../../knex";
 import * as faker from "faker";
 import { TestClientApollo } from "../../utils/TestClientApollo";
 import gql from "graphql-tag";
+import * as bcrypt from "bcryptjs";
+
 // import { redis } from "../../redis";
 
 faker.seed(Date.now() + process.hrtime()[1]);
@@ -216,5 +218,105 @@ describe("Teams", () => {
       .where({ id: team.id })
       .first();
     expect(dbTeam.deletedAt).not.toBeFalsy();
+  });
+
+  test("non admins get obfuscated email addresses", async () => {
+    // const newTeamName = faker.company.companyName();
+    const team = { id: faker.random.uuid(), name: faker.company.companyName() };
+    const user = {
+      id: faker.random.uuid(),
+      email: faker.internet.email(),
+      password: "foo"
+    };
+    const permission = { id: faker.random.number(), name: "USER" };
+    const gtp = {
+      id: faker.random.uuid(),
+      permissionId: permission.id,
+      userId: user.id,
+      teamId: team.id
+    };
+
+    await db("teams").insert(team);
+    await db("users").insert(user);
+    await db("permissions").insert(permission);
+    await db("granted_team_permissions").insert(gtp);
+
+    const testClient = new TestClientApollo(process.env.TEST_HOST as string);
+
+    const response = await testClient.client.query({
+      query: gql`
+        query team($teaminput: TeamInput) {
+          team(input: $teaminput) {
+            team {
+              id
+              name
+              users {
+                id
+                email
+              }
+            }
+          }
+        }
+      `,
+      variables: { teaminput: { where: { id: team.id } } }
+    });
+    expect((response.data as any).team.team.id).toEqual(team.id);
+    expect((response.data as any).team.team.users.length).toBe(1);
+    expect((response.data as any).team.team.users[0].id).toEqual(user.id);
+    expect((response.data as any).team.team.users[0].email).not.toEqual(
+      user.email
+    );
+  });
+
+  test("Admins get non-obfuscated email addresses", async () => {
+    // const newTeamName = faker.company.companyName();
+    const team = { id: faker.random.uuid(), name: faker.company.companyName() };
+    const password = faker.internet.password();
+    const user = {
+      email: faker.internet.email(),
+      password: await bcrypt.hash(password, 10),
+      id: faker.random.uuid(),
+      confirmed: true
+    };
+
+    const permission = { id: faker.random.number(), name: "ADMIN" };
+    const gtp = {
+      id: faker.random.uuid(),
+      permissionId: permission.id,
+      userId: user.id,
+      teamId: team.id
+    };
+
+    await db("teams").insert(team);
+    await db("users").insert(user);
+    await db("permissions").insert(permission);
+    await db("granted_team_permissions").insert(gtp);
+
+    const testClient = new TestClientApollo(process.env.TEST_HOST as string);
+
+    // login
+    await testClient.login(user.email, password);
+
+    const response = await testClient.client.query({
+      query: gql`
+        query team($teaminput: TeamInput) {
+          team(input: $teaminput) {
+            team {
+              id
+              name
+              users {
+                id
+                email
+              }
+            }
+          }
+        }
+      `,
+      variables: { teaminput: { where: { id: team.id } } }
+    });
+    expect((response.data as any).team.team.id).toEqual(team.id);
+    expect((response.data as any).team.team.users.length).toBe(1);
+    expect((response.data as any).team.team.users[0].id).toEqual(user.id);
+    expect((response.data as any).team.team.users[0].email).toEqual(user.email);
   });
 });
