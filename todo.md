@@ -1,11 +1,10 @@
 ## NEXT UP
 
 - addTeamPermision Mutation... Only team admin can add a team permission.
+
   - potential errors: permission does not exist.
   - user does not exist.
   - You don't have admin rights.
-
-* User / permissions query: should include permission name
 
 - add logging library middleware
 - Deploy to now.sh
