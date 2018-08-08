@@ -5,6 +5,7 @@ import { RedisPubSub } from "graphql-redis-subscriptions";
 import * as RateLimitRedisStore from "rate-limit-redis";
 import * as RateLimit from "express-rate-limit";
 import * as Redis from "ioredis";
+import * as depthLimit from "graphql-depth-limit";
 
 import { redis } from "./redis";
 import { confirmEmail } from "./routes/confirmEmail";
@@ -49,7 +50,8 @@ export const startServer = async () => {
         dataloaders: dataloaders()
       };
       // }
-    }
+    },
+    validationRules: [depthLimit(10)]
   } as any);
 
   server.express.use(
