@@ -1,0 +1,34 @@
+# the basic type definition
+type Permission {
+  id: String!
+  name: String!
+  team: Team!
+}
+
+input addPermissionInput {
+  permissionName: String!
+  teamId: String!
+  userId: String!
+}
+
+input removePermissionInput {
+  permissionName: String!
+  teamId: String!
+  userId: String!
+}
+
+type addPermissionResult {
+  error: [Error!]
+  permission: Permission!
+}
+
+type removePermissionResult {
+  error: [Error!]
+  # nulls the name, id of the permission
+  permission: Permission!
+}
+
+type Mutation {
+  addPermission(input: addPermissionInput!): addPermissionResult!
+  removePermission(input: removePermissionInput!): removePermissionResult
+}

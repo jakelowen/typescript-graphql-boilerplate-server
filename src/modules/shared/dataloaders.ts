@@ -2,9 +2,9 @@ import * as DataLoader from "dataloader";
 import { usersFromIds } from "../user/shared/connectors/userById";
 import { usersFromEmails } from "../user/shared/connectors/userByEmail";
 import {
-  userTeamPermissionsByUserIds,
+  userPermissionsByUserIds,
   TeamPermissionReturn
-} from "../user/shared/connectors/userTeamPermissionsByUserId";
+} from "../user/permissions/connectors/userPermissionsByUserId";
 import mapToMany from "../../utils/mapToMany";
 import mapTo from "../../utils/mapTo";
 import { users, teams } from "../../types/dbschema";
@@ -18,8 +18,8 @@ export default () => ({
   userByEmail: new DataLoader((emails: string[]) =>
     usersFromEmails(emails).then(mapTo(emails, (x: users) => x.email))
   ),
-  userTeamPermissionsByUserId: new DataLoader((ids: string[]) =>
-    userTeamPermissionsByUserIds(ids).then(
+  userPermissionsByUserId: new DataLoader((ids: string[]) =>
+    userPermissionsByUserIds(ids).then(
       mapToMany(ids, (x: TeamPermissionReturn) => x.userId)
     )
   ),

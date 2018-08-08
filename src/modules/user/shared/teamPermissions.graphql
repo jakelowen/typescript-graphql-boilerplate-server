@@ -1,4 +1,0 @@
-type TeamPermission {
-  team: String!
-  permissions: [String]
-}

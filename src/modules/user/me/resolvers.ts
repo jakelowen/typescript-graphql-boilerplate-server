@@ -2,7 +2,7 @@
 import { ResolverMap } from "../../../types/graphql-utils";
 import { createMiddleware } from "../../../utils/createMiddleware";
 import middleware from "./middleware";
-import reformatUserTeamPermissions from "./logic/reformatUserTeamPermissions";
+// import reformatUserTeamPermissions from "./logic/reformatUserTeamPermissions";
 // import reformatUserTeamPermissions from "./logic/reformatUserTeamPermissions";
 
 export const resolvers: ResolverMap = {
@@ -14,13 +14,13 @@ export const resolvers: ResolverMap = {
 
       return dataloaders.userById.load(user.id);
     })
-  },
-  User: {
-    async teamPermissions(user, _, context, __) {
-      const teamPermissions = await context.dataloaders.userTeamPermissionsByUserId.load(
-        user.id
-      );
-      return reformatUserTeamPermissions(teamPermissions);
-    }
   }
+  // User: {
+  //   async teamPermissions(user, _, context, __) {
+  //     const teamPermissions = await context.dataloaders.userTeamPermissionsByUserId.load(
+  //       user.id
+  //     );
+  //     return reformatUserTeamPermissions(teamPermissions);
+  //   }
+  // }
 };

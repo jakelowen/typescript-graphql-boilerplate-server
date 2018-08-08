@@ -127,6 +127,26 @@ message: string;
 __typename: "Team";
 id: string;
 name: string;
+users: Array<IUser>;
+}
+
+interface IUser {
+__typename: "User";
+id: string;
+firstName: string | null;
+lastName: string | null;
+email: string;
+permissions: Array<IPermission>;
+}
+
+/**
+ * the basic type definition
+ */
+  interface IPermission {
+__typename: "Permission";
+id: string;
+name: string;
+team: ITeam;
 }
 
 interface IPageInfo {
@@ -154,19 +174,6 @@ error: Array<IError>;
 team: ITeam | null;
 }
 
-interface IUser {
-__typename: "User";
-id: string;
-email: string;
-teamPermissions: Array<ITeamPermission> | null;
-}
-
-interface ITeamPermission {
-__typename: "TeamPermission";
-team: string;
-permissions: Array<string> | null;
-}
-
 interface IMutation {
 __typename: "Mutation";
 createTeam: ICreateTeamResult;
@@ -176,6 +183,8 @@ sendForgotPasswordEmail: boolean | null;
 forgotPasswordChange: Array<IError>;
 login: ILoginPayload | null;
 logout: boolean | null;
+addPermission: IAddPermissionResult;
+removePermission: IRemovePermissionResult | null;
 register: IRegisterPayload;
 }
 
@@ -203,6 +212,14 @@ key: string;
 interface ILoginOnMutationArguments {
 email: string;
 password: string;
+}
+
+interface IAddPermissionOnMutationArguments {
+input: IAddPermissionInput;
+}
+
+interface IRemovePermissionOnMutationArguments {
+input: IRemovePermissionInput;
 }
 
 interface IRegisterOnMutationArguments {
@@ -249,6 +266,34 @@ error: Array<IError>;
  * if present the auth token
  */
 login: string | null;
+}
+
+interface IAddPermissionInput {
+permissionName: string;
+teamId: string;
+userId: string;
+}
+
+interface IAddPermissionResult {
+__typename: "addPermissionResult";
+error: Array<IError>;
+permission: IPermission;
+}
+
+interface IRemovePermissionInput {
+permissionName: string;
+teamId: string;
+userId: string;
+}
+
+interface IRemovePermissionResult {
+__typename: "removePermissionResult";
+error: Array<IError>;
+
+/**
+ * nulls the name, id of the permission
+ */
+permission: IPermission;
 }
 
 interface IRegisterPayload {

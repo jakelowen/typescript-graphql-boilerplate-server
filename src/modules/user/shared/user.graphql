@@ -3,5 +3,5 @@ type User {
   firstName: String
   lastName: String
   email: String!
-  teamPermissions: [TeamPermission]
+  permissions: [Permission!]
 }
