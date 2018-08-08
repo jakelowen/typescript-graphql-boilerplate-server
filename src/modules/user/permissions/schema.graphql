@@ -19,13 +19,13 @@ input removePermissionInput {
 
 type addPermissionResult {
   error: [Error!]
-  permission: Permission!
+  permission: Permission
 }
 
 type removePermissionResult {
   error: [Error!]
   # nulls the name, id of the permission
-  permission: Permission!
+  permission: Permission
 }
 
 type Mutation {

@@ -7,9 +7,10 @@ import {
 } from "../user/permissions/connectors/userPermissionsByUserId";
 import mapToMany from "../../utils/mapToMany";
 import mapTo from "../../utils/mapTo";
-import { users, teams } from "../../types/dbschema";
+import { users, teams, permissions } from "../../types/dbschema";
 import batchLoadPages from "./pagination/connectors/batchLoadPages";
 import { teamsFromIds } from "../team/connectors/teamById";
+import { permissionsByNames } from "../user/permissions/connectors/permissionByName";
 
 export default () => ({
   userById: new DataLoader((ids: string[]) =>
@@ -26,5 +27,8 @@ export default () => ({
   pageLoader: new DataLoader((keys: string[]) => batchLoadPages(keys)),
   teamById: new DataLoader((ids: string[]) =>
     teamsFromIds(ids).then(mapTo(ids, (x: teams) => x.id))
+  ),
+  permissionByName: new DataLoader((names: string[]) =>
+    permissionsByNames(names).then(mapTo(names, (x: permissions) => x.name))
   )
 });
