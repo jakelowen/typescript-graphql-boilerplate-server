@@ -1,4 +1,26 @@
+input sendForgotPasswordEmailInput {
+  email: String!
+}
+
+type sendForgotPasswordEmailResponse {
+  sendForgotPasswordEmail: Boolean
+}
+
+input forgotPasswordChangeInput {
+  newPassword: String!
+  key: String!
+}
+
+type forgotPasswordChangeResponse {
+  error: [Error!]
+  forgotPasswordChange: Boolean
+}
+
 type Mutation {
-  sendForgotPasswordEmail(email: String!): Boolean
-  forgotPasswordChange(newPassword: String!, key: String!): [Error!]
+  sendForgotPasswordEmail(
+    input: sendForgotPasswordEmailInput!
+  ): sendForgotPasswordEmailResponse!
+  forgotPasswordChange(
+    input: forgotPasswordChangeInput!
+  ): forgotPasswordChangeResponse!
 }

@@ -28,7 +28,7 @@ beforeAll(async () => {
 });
 
 describe("forgot password", () => {
-  test("make sure it works", async () => {
+  test("too short password is rejected", async () => {
     const client = new TestClientApollo(process.env.TEST_HOST as string);
 
     const url = await createForgotPasswordLink(userId, redis);
@@ -38,29 +38,48 @@ describe("forgot password", () => {
     // try changing password thats too short
     expect(await client.forgotPasswordChange("aa", key)).toEqual({
       data: {
-        forgotPasswordChange: [
-          {
-            path: "newPassword",
-            message: passwordNotLongEnough
-          }
-        ]
+        forgotPasswordChange: {
+          error: [
+            {
+              path: "newPassword",
+              message: passwordNotLongEnough
+            }
+          ],
+          forgotPasswordChange: false
+        }
       }
     });
+  });
+
+  test("password change is successful", async () => {
+    const client = new TestClientApollo(process.env.TEST_HOST as string);
+
+    const url = await createForgotPasswordLink(userId, redis);
+    const parts = url.split("/");
+    const key = parts[parts.length - 1];
 
     // now change password
     expect(await client.forgotPasswordChange(newPassword, key)).toEqual({
-      data: { forgotPasswordChange: null }
+      data: {
+        forgotPasswordChange: {
+          forgotPasswordChange: true,
+          error: null
+        }
+      }
     });
 
     // make sure redis key expires after password change
     expect(await client.forgotPasswordChange("lotsagibberish", key)).toEqual({
       data: {
-        forgotPasswordChange: [
-          {
-            path: "key",
-            message: expiredKeyError
-          }
-        ]
+        forgotPasswordChange: {
+          error: [
+            {
+              path: "key",
+              message: expiredKeyError
+            }
+          ],
+          forgotPasswordChange: false
+        }
       }
     });
 

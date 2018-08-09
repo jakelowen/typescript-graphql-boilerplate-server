@@ -10,3 +10,12 @@ Difference's from Awad's version
 ## Enhancements
 
 - 8/8/18 - added robust team permissions system. Permissions table defines possible permissions that might exist ("ADMIN", "SENDMESSAGES", etc). Team admins can grant or remove any allowed permission to any user via mutations. A Team's users and a user's teams can be queried. When non-team admins query for team users, the user email addresses are obfuscated.
+- 8/9/18 - heroku deploy ready
+
+## To deploy on heroku
+
+Create an app: `heroku create`
+Provision redis: `heroku addons:create heroku-redis:hobby-dev`
+Privision postgres: `heroku addons:create heroku-postgresql:hobby-dev`
+Deploy: `git push heroku master`
+Migrate Database: `heroku run knex migrate:latest --knexfile dist/knexfile.js`

@@ -160,9 +160,15 @@ export class TestClientApollo {
     return this.client.mutate({
       mutation: gql`
         mutation {
-          forgotPasswordChange(newPassword: "${newPassword}", key: "${key}") {
-            path
-            message
+          forgotPasswordChange(input: {
+            newPassword: "${newPassword}", 
+            key: "${key}"
+          }) {
+            error {
+              path
+              message
+            }
+            forgotPasswordChange
           }
         }
       `
