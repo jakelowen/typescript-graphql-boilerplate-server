@@ -88,8 +88,7 @@
     "yup": "^0.25.1"
   },
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "NODE_ENV=development nodemon --exec ts-node src/index.ts",
+    "start": "NODE_ENV=development nodemon --exec ts-node src/index.ts",
     "build": "rimraf ./dist && tsc && copyfiles -u 1 src/**/*.graphql dist",
     "test-server": "NODE_ENV=test ts-node src/index.ts",
     "gen-schema-types": "ts-node src/scripts/createTypes.ts",
