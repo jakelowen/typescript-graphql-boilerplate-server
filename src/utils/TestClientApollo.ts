@@ -6,7 +6,7 @@ import { WebSocketLink } from "apollo-link-ws";
 import { getMainDefinition } from "apollo-utilities";
 import { InMemoryCache, NormalizedCacheObject } from "apollo-cache-inmemory";
 import { setContext } from "apollo-link-context";
-import { onError, ErrorLink } from "apollo-link-error";
+import { onError } from "apollo-link-error";
 import gql from "graphql-tag";
 import * as fetch from "node-fetch";
 

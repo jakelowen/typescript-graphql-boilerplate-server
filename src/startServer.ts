@@ -18,8 +18,14 @@ import customJWTmiddleware, {
 import { AssertionError } from "assert";
 
 const pubsub = new RedisPubSub({
-  publisher: new Redis(),
-  subscriber: new Redis()
+  publisher:
+    process.env.NODE_ENV === "production"
+      ? new Redis(process.env.REDIS_URL)
+      : new Redis(),
+  subscriber:
+    process.env.NODE_ENV === "production"
+      ? new Redis(process.env.REDIS_URL)
+      : new Redis()
 });
 
 export const startServer = async () => {
@@ -77,9 +83,10 @@ export const startServer = async () => {
 
   server.express.get("/confirm/:id", confirmEmail);
 
+  const port = process.env.PORT || 4000;
   const app = await server.start({
     cors,
-    port: process.env.NODE_ENV === "test" ? 0 : 4000,
+    port: process.env.NODE_ENV === "test" ? 0 : port,
     subscriptions: {
       path: "/",
       onConnect: async (connectionParams: any) => {
@@ -96,7 +103,7 @@ export const startServer = async () => {
       }
     }
   });
-  console.log("Server is running on localhost:4000");
+  console.log(`Server is running on localhost:${port}`);
 
   return app;
 };
