@@ -181,11 +181,11 @@ declare namespace GQL {
     deleteTeam: IDeleteTeamResult;
     sendForgotPasswordEmail: ISendForgotPasswordEmailResponse;
     forgotPasswordChange: IForgotPasswordChangeResponse;
-    login: ILoginPayload | null;
+    login: ILoginResponse | null;
     logout: boolean | null;
     addPermission: IAddPermissionResult;
     removePermission: IRemovePermissionResult | null;
-    register: IRegisterPayload;
+    register: IRegisterResponse;
   }
 
   interface ICreateTeamOnMutationArguments {
@@ -209,8 +209,7 @@ declare namespace GQL {
   }
 
   interface ILoginOnMutationArguments {
-    email: string;
-    password: string;
+    input: ILoginInput;
   }
 
   interface IAddPermissionOnMutationArguments {
@@ -222,8 +221,7 @@ declare namespace GQL {
   }
 
   interface IRegisterOnMutationArguments {
-    email: string;
-    password: string;
+    input: IRegisterInput;
   }
 
   interface ICreateTeamInput {
@@ -277,8 +275,13 @@ declare namespace GQL {
     forgotPasswordChange: boolean | null;
   }
 
-  interface ILoginPayload {
-    __typename: "LoginPayload";
+  interface ILoginInput {
+    email: string;
+    password: string;
+  }
+
+  interface ILoginResponse {
+    __typename: "LoginResponse";
     error: Array<IError>;
 
     /**
@@ -315,8 +318,13 @@ declare namespace GQL {
     permission: IPermission | null;
   }
 
-  interface IRegisterPayload {
-    __typename: "RegisterPayload";
+  interface IRegisterInput {
+    email: string;
+    password: string;
+  }
+
+  interface IRegisterResponse {
+    __typename: "RegisterResponse";
     error: Array<IError>;
     register: string | null;
   }

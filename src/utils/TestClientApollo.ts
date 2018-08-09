@@ -84,7 +84,7 @@ export class TestClientApollo {
     const responseLogin = await this.client.mutate({
       mutation: gql`
       mutation {
-          login(email: "${email}", password: "${password}") {
+          login(input: { email: "${email}", password: "${password}"}) {
             error {
               path
               message
@@ -102,7 +102,7 @@ export class TestClientApollo {
     return this.client.mutate({
       mutation: gql`
       mutation {
-        register(email: "${email}", password: "${password}") {
+        register(input: {email: "${email}", password: "${password}"}) {
           error {
             path
             message
