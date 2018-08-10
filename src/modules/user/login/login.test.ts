@@ -12,47 +12,49 @@ faker.seed(Date.now() + process.hrtime()[1]);
 const email = faker.internet.email();
 const password = faker.internet.password();
 
-const loginExpectError = async (
-  client: TestClientApollo,
-  e: string,
-  p: string,
-  errMsg: string
-) => {
-  const response = await client.login(e, p);
-  expect(response.data).toEqual({
-    login: { error: [{ path: "email", message: errMsg }], login: null }
-  });
-};
-
 describe("login", () => {
   test("email not found sends back error", async () => {
-    const clientApollo = new TestClientApollo(process.env.TEST_HOST as string);
-    await loginExpectError(
-      clientApollo,
-      "foo@bob.com",
-      "whatever",
-      invalidLogin
-    );
+    const client = new TestClientApollo(process.env.TEST_HOST as string);
+
+    const response = await client.login(email, password);
+    expect(response.data).toEqual({
+      login: {
+        error: [{ path: "email", message: invalidLogin }],
+        login: null
+      }
+    });
   });
 
   test("email not confirmed", async () => {
-    const clientApollo = new TestClientApollo(process.env.TEST_HOST as string);
-    await clientApollo.register(email, password);
+    const client = new TestClientApollo(process.env.TEST_HOST as string);
+    await client.register(email, password);
 
-    await loginExpectError(clientApollo, email, password, confirmEmailError);
+    const response = await client.login(email, password);
+    expect(response.data).toEqual({
+      login: {
+        error: [{ path: "email", message: confirmEmailError }],
+        login: null
+      }
+    });
 
     await db("users")
       .update({ confirmed: true })
       .where({ email });
 
-    await loginExpectError(clientApollo, email, "fdsaffdsafdsa", invalidLogin);
+    const response2 = await client.login(email, "fdsaffdsafdsa");
+    expect(response2.data).toEqual({
+      login: {
+        error: [{ path: "email", message: invalidLogin }],
+        login: null
+      }
+    });
 
-    const response = await clientApollo.login(email, password);
+    const response3 = await client.login(email, password);
     // get token from response
     let token;
-    if (response.data) {
-      expect(response.data.login.login).not.toBeNull();
-      token = response.data.login.login;
+    if (response3.data) {
+      expect(response3.data.login.login).not.toBeNull();
+      token = response3.data.login.login;
     } else {
       throw new Error("No response");
     }

@@ -5,7 +5,7 @@ import { users } from "../../../../types/dbschema";
 export default async (data: {
   email: string;
   password: string;
-}): Promise<users> =>
+}): Promise<users[]> =>
   db("users")
     .insert(data)
     .returning("*");

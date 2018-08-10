@@ -6,13 +6,15 @@ export default async (
   hashedPassword: string,
   dataloaders: DataLoaders
 ) => {
-  const newUser = await insertNewUser({ email, password: hashedPassword });
+  const newUserOp = await insertNewUser({ email, password: hashedPassword });
+  const newUser = newUserOp[0];
 
   await dataloaders.userByEmail
     .clear(newUser.email)
     .prime(newUser.email, newUser);
 
-  await dataloaders.userById.clear(newUser.id).prime(newUser.id, newUser);
-
-  return true;
+  return dataloaders.userById
+    .clear(newUser.id)
+    .prime(newUser.id, newUser)
+    .load(newUser.id);
 };

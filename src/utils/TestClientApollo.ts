@@ -174,4 +174,19 @@ export class TestClientApollo {
       `
     });
   }
+
+  async sendForgotPasswordEmail(email: string) {
+    this.token = null;
+    return this.client.mutate({
+      mutation: gql`
+        mutation {
+          sendForgotPasswordEmail(input: {
+            email: "${email}"
+          }) {
+            sendForgotPasswordEmail
+          }
+        }
+      `
+    });
+  }
 }

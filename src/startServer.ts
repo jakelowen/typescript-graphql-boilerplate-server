@@ -36,25 +36,27 @@ export const startServer = async () => {
   const server = new GraphQLServer({
     schema: genSchema(),
     context: ({ request, connection }: { request: any; connection: any }) => {
+      const universalContext = {
+        redis,
+        pubsub,
+        dataloaders: dataloaders()
+      };
+
       // return a special context in case of subscription
       if (connection && !request) {
         return {
-          redis,
           user: connection.context.user,
-          pubsub,
-          dataloaders: dataloaders()
+          ...universalContext
         };
       }
       // else return the normal conext
       // console.log(request);
       return {
-        redis,
-        url: request.protocol + "://" + request.get("host"), // session: request.session,
+        url: request.protocol + "://" + request.get("host"),
         user: request.user,
         req: request,
-        pubsub,
-        dataloaders: dataloaders()
-      };
+        ...universalContext
+      }; // session: request.session,
       // }
     },
     validationRules: [depthLimit(10)]

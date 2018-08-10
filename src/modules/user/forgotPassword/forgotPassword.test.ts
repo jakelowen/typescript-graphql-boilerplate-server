@@ -1,6 +1,5 @@
 import * as faker from "faker";
 import * as Redis from "ioredis";
-
 import db from "../../../knex";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
 import { expiredKeyError } from "./errorMessages";
@@ -46,6 +45,18 @@ describe("forgot password", () => {
             }
           ],
           forgotPasswordChange: false
+        }
+      }
+    });
+  });
+
+  test.only("send forgotPassword Email", async () => {
+    const client = new TestClientApollo(process.env.TEST_HOST as string);
+    const response = await client.sendForgotPasswordEmail(email);
+    expect(response).toEqual({
+      data: {
+        sendForgotPasswordEmail: {
+          sendForgotPasswordEmail: true
         }
       }
     });
