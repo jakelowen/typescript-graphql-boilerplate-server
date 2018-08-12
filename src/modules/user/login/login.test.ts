@@ -7,13 +7,18 @@ import { redis } from "../../../redis";
 import { userTokenVersionPrefix } from "../../../constants";
 import { TokenPayload } from "../../../types/graphql-utils";
 import db from "../../../knex";
+import beforeEachTruncate from "../../../testUtils/beforeEachTruncate";
 
 faker.seed(Date.now() + process.hrtime()[1]);
-const email = faker.internet.email();
-const password = faker.internet.password();
+
+beforeEach(async () => {
+  await beforeEachTruncate();
+});
 
 describe("login", () => {
   test("email not found sends back error", async () => {
+    const email = faker.internet.email();
+    const password = faker.internet.password();
     const client = new TestClientApollo(process.env.TEST_HOST as string);
 
     const response = await client.login(email, password);
@@ -26,6 +31,8 @@ describe("login", () => {
   });
 
   test("email not confirmed", async () => {
+    const email = faker.internet.email();
+    const password = faker.internet.password();
     const client = new TestClientApollo(process.env.TEST_HOST as string);
     await client.register(email, password);
 

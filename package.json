@@ -95,7 +95,7 @@
     "test-server": "NODE_ENV=test ts-node src/index.ts",
     "gen-schema-types": "ts-node src/scripts/createTypes.ts",
     "psql": "psql -U postgres graphql-ts-server-boilerplate",
-    "test": "NODE_ENV=test jest --forceExit",
+    "test": "NODE_ENV=test jest --runInBand --forceExit",
     "gen-db-schema-types": "schemats generate -c postgres://postgres@localhost/graphql-ts-server-boilerplate -o src/types/dbschema.ts",
     "postinstall": "yarn build"
   },

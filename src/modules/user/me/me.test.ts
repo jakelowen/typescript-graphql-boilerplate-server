@@ -6,8 +6,6 @@ import db from "../../../knex";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
 import { redis } from "../../../redis";
 import { userTokenVersionPrefix } from "../../../constants";
-import { teams } from "../../../types/dbschema";
-import { json } from "../../../../node_modules/@types/express";
 import beforeEachTruncate from "../../../testUtils/beforeEachTruncate";
 
 faker.seed(Date.now() + process.hrtime()[1]);

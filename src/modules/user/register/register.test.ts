@@ -8,13 +8,19 @@ import {
   invalidEmail
 } from "./errorMessages";
 import { passwordNotLongEnough } from "../shared/errorMessages";
+import beforeEachTruncate from "../../../testUtils/beforeEachTruncate";
 
 faker.seed(Date.now() + process.hrtime()[1]);
-const email = faker.internet.email();
-const password = faker.internet.password();
+
+beforeEach(async () => {
+  await beforeEachTruncate();
+});
 
 describe("Register User", async () => {
   test("check for duplicate email", async () => {
+    const email = faker.internet.email();
+    const password = faker.internet.password();
+
     // make sure we can register a user
     const client = new TestClientApollo(process.env.TEST_HOST as string);
     const response = await client.register(email, password);
@@ -25,9 +31,9 @@ describe("Register User", async () => {
     // const users = await User.find({ where: { email } });
     const users = await db("users").where({ email }); // User.query().where({ email });
     expect(users).toHaveLength(1);
-    const user = users[0];
-    expect(user.email).toEqual(email);
-    expect(user.password).not.toEqual(password);
+    const dbUser = users[0];
+    expect(dbUser.email).toEqual(email);
+    expect(dbUser.password).not.toEqual(password);
 
     // test for duplicate emails
     const response2 = (await client.register(email, password)) as any;
@@ -39,6 +45,8 @@ describe("Register User", async () => {
   });
 
   test("check bad email", async () => {
+    const password = faker.internet.password();
+
     // catch bad email
     const client = new TestClientApollo(process.env.TEST_HOST as string);
     const response = await client.register("b", password);
@@ -55,6 +63,8 @@ describe("Register User", async () => {
   });
 
   test("check bad password", async () => {
+    const email = faker.internet.email();
+
     // catch bad password
     const client = new TestClientApollo(process.env.TEST_HOST as string);
     const response = await client.register(email, "ad");

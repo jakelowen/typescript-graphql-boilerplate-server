@@ -3,20 +3,23 @@ import decodeDeterministicCacheId from "../logic/decodeDeterministicCacheId";
 import db from "../../../../knex";
 import loadSinglePage from "./loadSinglePage";
 import * as faker from "faker";
+import beforeEachTruncate from "../../../../testUtils/beforeEachTruncate";
 
 faker.seed(Date.now() + process.hrtime()[1]);
+beforeEach(async () => {
+  await beforeEachTruncate();
+});
 
 describe("loadSinglePage / paginator", () => {
   test("uses filter query correctly", async () => {
-    const randomLeader = faker.random.number(1000);
     const teams = [
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_aa_${faker.company.companyName()}`
+        name: `aa_${faker.company.companyName()}`
       },
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_zz_${faker.company.companyName()}`
+        name: `zz_${faker.company.companyName()}`
       }
     ];
     await db("teams").insert(teams);
@@ -37,22 +40,20 @@ describe("loadSinglePage / paginator", () => {
   });
 
   test("uses limit / order asc correctly", async () => {
-    const randomLeader = faker.random.number(1000);
     const teams = [
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_aa_${faker.company.companyName()}`
+        name: `aa_${faker.company.companyName()}`
       },
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_zz_${faker.company.companyName()}`
+        name: `zz_${faker.company.companyName()}`
       }
     ];
     await db("teams").insert(teams);
     const fetchPayload = {
       table: { name: "teams", uniqueColumn: "id" },
       limit: 1,
-      where: { name_startswith: randomLeader },
       orderBy: [{ sort: "name", direction: "ASC" }]
     };
 
@@ -80,22 +81,20 @@ describe("loadSinglePage / paginator", () => {
   });
 
   test("uses limit / order DESC correctly", async () => {
-    const randomLeader = faker.random.number(1000);
     const teams = [
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_aa_${faker.company.companyName()}`
+        name: `aa_${faker.company.companyName()}`
       },
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_zz_${faker.company.companyName()}`
+        name: `zz_${faker.company.companyName()}`
       }
     ];
     await db("teams").insert(teams);
     const fetchPayload = {
       table: { name: "teams", uniqueColumn: "id" },
       limit: 1,
-      where: { name_startswith: randomLeader },
       orderBy: [{ sort: "name", direction: "DESC" }]
     };
 
@@ -123,22 +122,20 @@ describe("loadSinglePage / paginator", () => {
   });
 
   test("pagination works correctly", async () => {
-    const randomLeader = faker.random.number(1000);
     const teams = [
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_aa_${faker.company.companyName()}`
+        name: `aa_${faker.company.companyName()}`
       },
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_zz_${faker.company.companyName()}`
+        name: `zz_${faker.company.companyName()}`
       }
     ];
     await db("teams").insert(teams);
     const fetchPayload = {
       table: { name: "teams", uniqueColumn: "id" },
       limit: 1,
-      where: { name_startswith: randomLeader },
       orderBy: [{ sort: "name", direction: "ASC" }]
     };
 
@@ -152,7 +149,6 @@ describe("loadSinglePage / paginator", () => {
       table: { name: "teams", uniqueColumn: "id" },
       after: results.pageInfo.nextCursor,
       limit: 1,
-      where: { name_startswith: randomLeader },
       orderBy: [{ sort: "name", direction: "ASC" }]
     };
 
@@ -164,22 +160,20 @@ describe("loadSinglePage / paginator", () => {
   });
 
   test("uses caching/ttl correctly", async () => {
-    const randomLeader = faker.random.number(1000);
     const teams = [
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_aa_${faker.company.companyName()}`
+        name: `aa_${faker.company.companyName()}`
       },
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_zz_${faker.company.companyName()}`
+        name: `zz_${faker.company.companyName()}`
       }
     ];
     await db("teams").insert(teams);
     const fetchPayload = {
       table: { name: "teams", uniqueColumn: "id" },
-      ttl: 120,
-      where: { name_startswith: randomLeader }
+      ttl: 120
     };
 
     const results = await loadSinglePage(

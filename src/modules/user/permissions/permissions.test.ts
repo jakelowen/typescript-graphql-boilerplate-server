@@ -13,13 +13,15 @@ import {
   duplicatePermission,
   notTeamAdminError
 } from "./logic/errors";
+import beforeEachTruncate from "../../../testUtils/beforeEachTruncate";
 
 // import { redis } from "../../redis";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 
-// beforeEach(async () =>
-//   Promise.all([db.raw("TRUNCATE TABLE teams CASCADE"), redis.flushall()]));
+beforeEach(async () => {
+  await beforeEachTruncate();
+});
 
 describe("Permissions", () => {
   test("can get user permissions", async () => {

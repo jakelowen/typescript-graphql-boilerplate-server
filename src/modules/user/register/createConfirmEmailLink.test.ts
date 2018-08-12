@@ -1,45 +1,45 @@
 import * as Redis from "ioredis";
 import fetch from "node-fetch";
+import * as bcrypt from "bcryptjs";
 
 import db from "../../../knex";
 import * as faker from "faker";
 import createConfirmEmailLink from "./logic/createConfirmEmailLink";
+import beforeEachTruncate from "../../../testUtils/beforeEachTruncate";
 
 faker.seed(Date.now() + process.hrtime()[1]);
-const email = faker.internet.email();
-const password = faker.internet.password();
 
 const redis = new Redis();
 
-let userId: string;
-
-beforeAll(async () => {
-  const user = await db("users")
-    .insert({
-      email,
-      password,
-      confirmed: true
-    })
-    .returning("*");
-  userId = user[0].id;
+beforeEach(async () => {
+  await beforeEachTruncate();
 });
 
 describe("test createConfirmEmailLink", () => {
   test("make sure it confirms user and clears key in redis", async () => {
+    const password = faker.internet.password();
+    const user = {
+      id: faker.random.uuid(),
+      email: faker.internet.email(),
+      password: await bcrypt.hash(password, 10),
+      confirmed: true
+    };
+    await db("users").insert(user);
+
     const url = await createConfirmEmailLink(
       process.env.TEST_HOST as string,
-      userId,
+      user.id,
       redis
     );
     const response = await fetch(url);
     const text = await response.text();
     expect(text).toEqual("ok");
 
-    const user = await db("users")
-      .where({ id: userId })
+    const dbUser = await db("users")
+      .where({ id: user.id })
       .first();
     // findOne({ where: { id: userId } });
-    expect(user.confirmed).toBeTruthy();
+    expect(dbUser.confirmed).toBeTruthy();
 
     const chunks = url.split("/");
     const key = chunks[chunks.length - 1];

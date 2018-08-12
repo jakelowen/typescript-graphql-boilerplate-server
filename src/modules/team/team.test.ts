@@ -1,30 +1,26 @@
-// import generateDeterministicCacheId from "./generateDeterministicCacheId";
-// import decodeDeterministicCacheId from "./decodeDeterministicCacheId";
 import db from "../../knex";
-// import loadSinglePage from "./loadSinglePage";
 import * as faker from "faker";
 import { TestClientApollo } from "../../utils/TestClientApollo";
 import gql from "graphql-tag";
 import * as bcrypt from "bcryptjs";
-
-// import { redis } from "../../redis";
+import beforeEachTruncate from "../../testUtils/beforeEachTruncate";
 
 faker.seed(Date.now() + process.hrtime()[1]);
 
-// beforeEach(async () =>
-//   Promise.all([db.raw("TRUNCATE TABLE teams CASCADE"), redis.flushall()]));
+beforeEach(async () => {
+  await beforeEachTruncate();
+});
 
 describe("Teams", () => {
   test("multi teams search working", async () => {
-    const randomLeader = faker.random.number(1000);
     const teams = [
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_aa_${faker.company.companyName()}`
+        name: `aa_${faker.company.companyName()}`
       },
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_zz_${faker.company.companyName()}`
+        name: `zz_${faker.company.companyName()}`
       }
     ];
 
@@ -44,7 +40,6 @@ describe("Teams", () => {
       `,
       variables: {
         teamsinput: {
-          where: { name_startswith: randomLeader },
           noCache: true,
           orderBy: [{ sort: "name", direction: "ASC" }]
         }
@@ -55,16 +50,15 @@ describe("Teams", () => {
   });
 
   test("multi teams search working excludes deleted", async () => {
-    const randomLeader = faker.random.number(1000);
     const teams = [
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_aa_${faker.company.companyName()}`,
+        name: `aa_${faker.company.companyName()}`,
         deletedAt: db.fn.now()
       },
       {
         id: faker.random.uuid(),
-        name: `${randomLeader}_zz_${faker.company.companyName()}`,
+        name: `zz_${faker.company.companyName()}`,
         deletedAt: db.fn.now()
       }
     ];
@@ -85,7 +79,6 @@ describe("Teams", () => {
       `,
       variables: {
         teamsinput: {
-          where: { name_startswith: randomLeader },
           noCache: true,
           orderBy: [{ sort: "name", direction: "ASC" }]
         }
@@ -149,9 +142,6 @@ describe("Teams", () => {
 
   test("create Team", async () => {
     const newTeamName = faker.company.companyName();
-    // const teams = [{ id: faker.random.uuid(), name: faker.company.companyName() }];
-
-    // await db("teams").insert(teams);
     const testClient = new TestClientApollo(process.env.TEST_HOST as string);
 
     const response = await testClient.client.mutate({
@@ -171,7 +161,6 @@ describe("Teams", () => {
   });
 
   test("update Team", async () => {
-    // const newTeamName = faker.company.companyName();
     const team = { id: faker.random.uuid(), name: faker.company.companyName() };
 
     await db("teams").insert(team);
@@ -195,7 +184,6 @@ describe("Teams", () => {
   });
 
   test("delete Team", async () => {
-    // const newTeamName = faker.company.companyName();
     const team = { id: faker.random.uuid(), name: faker.company.companyName() };
 
     await db("teams").insert(team);
@@ -221,7 +209,6 @@ describe("Teams", () => {
   });
 
   test("non admins get obfuscated email addresses", async () => {
-    // const newTeamName = faker.company.companyName();
     const team = { id: faker.random.uuid(), name: faker.company.companyName() };
     const user = {
       id: faker.random.uuid(),
@@ -269,7 +256,6 @@ describe("Teams", () => {
   });
 
   test("Admins get non-obfuscated email addresses", async () => {
-    // const newTeamName = faker.company.companyName();
     const team = { id: faker.random.uuid(), name: faker.company.companyName() };
     const password = faker.internet.password();
     const user = {
