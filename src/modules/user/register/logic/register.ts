@@ -12,13 +12,13 @@ import text from "../../../../email/templates/confirmEmail/text";
 import sendEmail from "../../../../email/connectors/sendEmail";
 
 export default async (
-  { email, password }: GQL.IRegisterInput,
+  { email, password, firstName, lastName }: GQL.IRegisterInput,
   { dataloaders }: Context
 ) => {
   // make sure input matches validation
   try {
     await registrationYupSchema.validate(
-      { email, password },
+      { email, password, firstName, lastName },
       { abortEarly: false }
     );
   } catch (err) {
@@ -36,7 +36,13 @@ export default async (
 
   // proceed with registration
   const hashedPassword = await hashPassword(password);
-  const newUser = await insertNewUser(email, hashedPassword, dataloaders);
+  const newUser = await insertNewUser(
+    email,
+    firstName,
+    lastName,
+    hashedPassword,
+    dataloaders
+  );
 
   // send confirm email message
   const url = await createConfirmEmailLink(

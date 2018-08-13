@@ -321,6 +321,8 @@ declare namespace GQL {
   interface IRegisterInput {
     email: string;
     password: string;
+    firstName?: string | null;
+    lastName?: string | null;
   }
 
   interface IRegisterResponse {

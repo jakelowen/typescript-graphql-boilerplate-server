@@ -6,6 +6,8 @@ type RegisterResponse {
 input registerInput {
   email: String!
   password: String!
+  firstName: String
+  lastName: String
 }
 
 type Mutation {

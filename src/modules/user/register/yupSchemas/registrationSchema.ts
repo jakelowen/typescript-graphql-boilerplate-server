@@ -8,5 +8,13 @@ export default yup.object().shape({
     .min(3, emailNotLongEnough)
     .max(255)
     .email(invalidEmail),
-  password: registerPasswordValidation
+  password: registerPasswordValidation,
+  firstName: yup
+    .string()
+    .min(3, emailNotLongEnough)
+    .max(255),
+  lastName: yup
+    .string()
+    .min(3, emailNotLongEnough)
+    .max(255)
 });

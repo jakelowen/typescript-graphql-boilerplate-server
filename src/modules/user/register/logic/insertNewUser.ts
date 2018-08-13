@@ -3,10 +3,17 @@ import { DataLoaders } from "../../../../types/graphql-utils";
 
 export default async (
   email: string,
+  firstName: string,
+  lastName: string,
   hashedPassword: string,
   dataloaders: DataLoaders
 ) => {
-  const newUserOp = await insertNewUser({ email, password: hashedPassword });
+  const newUserOp = await insertNewUser({
+    email,
+    firstName,
+    lastName,
+    password: hashedPassword
+  });
   const newUser = newUserOp[0];
 
   await dataloaders.userByEmail
