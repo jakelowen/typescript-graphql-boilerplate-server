@@ -186,6 +186,7 @@ declare namespace GQL {
     addPermission: IAddPermissionResult;
     removePermission: IRemovePermissionResult | null;
     register: IRegisterResponse;
+    resendConfirmationEmail: IResendConfirmationEmailResponse;
   }
 
   interface ICreateTeamOnMutationArguments {
@@ -222,6 +223,10 @@ declare namespace GQL {
 
   interface IRegisterOnMutationArguments {
     input: IRegisterInput;
+  }
+
+  interface IResendConfirmationEmailOnMutationArguments {
+    input: IResendConfirmationEmailInput;
   }
 
   interface ICreateTeamInput {
@@ -329,6 +334,16 @@ declare namespace GQL {
     __typename: "RegisterResponse";
     error: Array<IError>;
     register: string | null;
+  }
+
+  interface IResendConfirmationEmailInput {
+    email: string;
+  }
+
+  interface IResendConfirmationEmailResponse {
+    __typename: "resendConfirmationEmailResponse";
+    error: Array<IError>;
+    resendConfirmationEmail: boolean | null;
   }
 
   interface ISubscription {

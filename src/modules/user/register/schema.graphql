@@ -10,6 +10,18 @@ input registerInput {
   lastName: String
 }
 
+input resendConfirmationEmailInput {
+  email: String!
+}
+
+type resendConfirmationEmailResponse {
+  error: [Error!]
+  resendConfirmationEmail: Boolean
+}
+
 type Mutation {
   register(input: registerInput!): RegisterResponse!
+  resendConfirmationEmail(
+    input: resendConfirmationEmailInput!
+  ): resendConfirmationEmailResponse!
 }

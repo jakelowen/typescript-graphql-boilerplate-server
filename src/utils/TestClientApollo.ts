@@ -172,4 +172,23 @@ export class TestClientApollo {
       `
     });
   }
+
+  async resendConfirmationEmail(email: string) {
+    this.token = null;
+    return this.client.mutate({
+      mutation: gql`
+        mutation {
+          resendConfirmationEmail(input: {
+            email: "${email}"
+          }) {
+            error {
+              path
+              message
+            }
+            resendConfirmationEmail
+          }
+        }
+      `
+    });
+  }
 }
