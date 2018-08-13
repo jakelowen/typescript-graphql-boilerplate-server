@@ -18,7 +18,6 @@ export default async (
       { abortEarly: false }
     );
   } catch (err) {
-    console.log("!!!!!! error", formatYupError(err));
     return { error: formatYupError(err), resendConfirmationEmail: false };
   }
 
