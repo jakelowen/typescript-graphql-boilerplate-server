@@ -25,6 +25,14 @@ export default async (
     return { error: formatYupError(err) };
   }
 
+  if (!firstName) {
+    firstName = null;
+  }
+
+  if (!lastName) {
+    lastName = null;
+  }
+
   // see if user already in db with this email
   const existingUser = await dataloaders.userByEmail.load(email);
 

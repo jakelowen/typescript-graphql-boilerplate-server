@@ -13,7 +13,12 @@ export const confirmEmail = async (req: Request, res: Response) => {
       .update({ confirmed: true })
       .where({ id: userId });
     await deleteConfirmEmailLink(id, redis);
-    res.send("ok");
+    // res.send(
+    //   `Your email has been confirmed. Please log in to ${
+    //     process.env.FRONTEND_HOST
+    //   } to continue`
+    // );
+    res.redirect(`${process.env.FRONTEND_HOST}/confirmed`);
   } else {
     res.send("invalid");
   }

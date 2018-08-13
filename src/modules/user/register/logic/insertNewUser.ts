@@ -3,8 +3,8 @@ import { DataLoaders } from "../../../../types/graphql-utils";
 
 export default async (
   email: string,
-  firstName: string,
-  lastName: string,
+  firstName: string | null,
+  lastName: string | null,
   hashedPassword: string,
   dataloaders: DataLoaders
 ) => {
