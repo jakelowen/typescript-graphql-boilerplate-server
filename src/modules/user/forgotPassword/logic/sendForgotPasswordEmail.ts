@@ -12,7 +12,8 @@ export default async (
   const existingUser = await dataloaders.userByEmail.load(email);
 
   if (!existingUser) {
-    return false;
+    // always return true, don't want to reveal whether a user exists or not
+    return { sendForgotPasswordEmail: true };
   }
 
   const url = await createForgotPasswordLink(existingUser.id, redis);
