@@ -177,6 +177,30 @@ export class TestClientApollo {
     });
   }
 
+  async updateProfile(firstName?: string, lastName?: string) {
+    return this.client.mutate({
+      mutation: gql`
+        mutation {
+          updateProfile(input: {
+            firstName: "${firstName}",
+            lastName: "${lastName}"
+          }) {
+            error {
+              path
+              message
+            }
+            updateProfile {
+              id
+              email
+              firstName
+              lastName
+            }
+          }
+        }
+      `
+    });
+  }
+
   async sendForgotPasswordEmail(email: string) {
     this.token = null;
     return this.client.mutate({

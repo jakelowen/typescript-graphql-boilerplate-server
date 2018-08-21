@@ -11,7 +11,7 @@ beforeEach(async () => {
   await beforeEachTruncate();
 });
 
-describe("forgot password", () => {
+describe("change password", () => {
   test("it works", async () => {
     const currentPassword = faker.internet.password();
     const newPassword = faker.internet.password();

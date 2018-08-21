@@ -1,0 +1,13 @@
+input updateProfileInput {
+  firstName: String
+  lastName: String
+}
+
+type updateProfileResponse {
+  error: [Error!]
+  updateProfile: User
+}
+
+type Mutation {
+  updateProfile(input: updateProfileInput!): updateProfileResponse!
+}
