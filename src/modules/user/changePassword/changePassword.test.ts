@@ -1,5 +1,4 @@
 import * as faker from "faker";
-import * as Redis from "ioredis";
 import * as bcrypt from "bcryptjs";
 import db from "../../../knex";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
