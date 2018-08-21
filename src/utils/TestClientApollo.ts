@@ -158,6 +158,25 @@ export class TestClientApollo {
     });
   }
 
+  async changePassword(newPassword: string, currentPassword: string) {
+    return this.client.mutate({
+      mutation: gql`
+        mutation {
+          changePassword(input: {
+            newPassword: "${newPassword}", 
+            currentPassword: "${currentPassword}"
+          }) {
+            error {
+              path
+              message
+            }
+            changePassword
+          }
+        }
+      `
+    });
+  }
+
   async sendForgotPasswordEmail(email: string) {
     this.token = null;
     return this.client.mutate({

@@ -1,6 +1,6 @@
 import { Context } from "../../../../types/graphql-utils";
 import { errorResponse, confirmEmailError } from "../errorMessages";
-import verifyPassword from "./verifyPassword";
+import verifyPassword from "../../shared/logic/verifyPassword";
 import getCurrentValidTokenVersion from "./getCurrentValidTokenVersion";
 import generateToken from "./generateToken";
 

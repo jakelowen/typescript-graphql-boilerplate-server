@@ -1,0 +1,13 @@
+input changePasswordInput {
+  currentPassword: String!
+  newPassword: String!
+}
+
+type changePasswordResponse {
+  error: [Error!]
+  changePassword: Boolean
+}
+
+type Mutation {
+  changePassword(input: changePasswordInput!): changePasswordResponse!
+}

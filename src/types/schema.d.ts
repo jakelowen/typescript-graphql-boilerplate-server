@@ -179,6 +179,7 @@ declare namespace GQL {
     createTeam: ICreateTeamResult;
     updateTeam: IUpdateTeamResult;
     deleteTeam: IDeleteTeamResult;
+    changePassword: IChangePasswordResponse;
     sendForgotPasswordEmail: ISendForgotPasswordEmailResponse;
     forgotPasswordChange: IForgotPasswordChangeResponse;
     login: ILoginResponse | null;
@@ -199,6 +200,10 @@ declare namespace GQL {
 
   interface IDeleteTeamOnMutationArguments {
     input: IDeleteTeamInput;
+  }
+
+  interface IChangePasswordOnMutationArguments {
+    input: IChangePasswordInput;
   }
 
   interface ISendForgotPasswordEmailOnMutationArguments {
@@ -258,6 +263,17 @@ declare namespace GQL {
     __typename: "DeleteTeamResult";
     error: Array<IError>;
     team: ITeam | null;
+  }
+
+  interface IChangePasswordInput {
+    currentPassword: string;
+    newPassword: string;
+  }
+
+  interface IChangePasswordResponse {
+    __typename: "changePasswordResponse";
+    error: Array<IError>;
+    changePassword: boolean | null;
   }
 
   interface ISendForgotPasswordEmailInput {

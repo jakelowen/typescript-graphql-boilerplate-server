@@ -1,10 +1,10 @@
 import { Context } from "../../../../types/graphql-utils";
 import extractUserIdFromForgotPassKey from "./extractUserIdFromForgotPassKey";
 import { expiredKeyError } from "../errorMessages";
-import newPasswordSchema from "../yupSchemas/newPassword";
+import newPasswordSchema from "../../shared/yupSchemas/newPassword";
 import { formatYupError } from "../../../../utils/formatYupError";
 import hashPassword from "../../shared/logic/hashPassword";
-import updatePassword from "../connectors/updatePassword";
+import updatePassword from "../../shared/connectors/updatePassword";
 import deleteForgotPassKey from "./deleteForgotPassKey";
 
 export default async (
