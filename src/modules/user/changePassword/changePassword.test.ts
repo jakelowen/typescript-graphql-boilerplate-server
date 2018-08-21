@@ -3,13 +3,8 @@ import * as Redis from "ioredis";
 import * as bcrypt from "bcryptjs";
 import db from "../../../knex";
 import { TestClientApollo } from "../../../utils/TestClientApollo";
-// import { expiredKeyError } from "./errorMessages";
-import { passwordNotLongEnough } from "../shared/errorMessages";
-// import createForgotPasswordLink from "./logic/createForgotPasswordLink";
 import beforeEachTruncate from "../../../testUtils/beforeEachTruncate";
 import { badPassError, noUserError } from "./errorMessages";
-
-const redis = new Redis();
 
 faker.seed(Date.now() + process.hrtime()[1]);
 
