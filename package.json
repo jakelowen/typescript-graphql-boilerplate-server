@@ -97,7 +97,7 @@
     "psql": "psql -U postgres graphql-ts-server-boilerplate",
     "test": "NODE_ENV=test jest --runInBand --forceExit",
     "gen-db-schema-types": "schemats generate -c postgres://postgres@localhost/graphql-ts-server-boilerplate -o src/types/dbschema.ts",
-    "postinstall": "yarn build"
+    "deploy": "now --docker -e DATABASE_URL=$(heroku config:get DATABASE_URL) -e REDIS_URL=$(heroku config:get REDIS_URL) --dotenv=.env.production"
   },
   "jest": {
     "globalSetup": "./src/testUtils/callSetup.js",
