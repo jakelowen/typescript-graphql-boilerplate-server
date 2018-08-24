@@ -1,4 +1,7 @@
 // Update with your config settings.
+import * as pg from "pg";
+// needed for heroku connection via SSL with knex
+pg.defaults.ssl = true;
 
 module.exports = {
   development: {

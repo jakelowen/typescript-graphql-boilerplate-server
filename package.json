@@ -23,6 +23,7 @@
     "@types/mailgun-js": "^0.16.0",
     "@types/node": "^10.3.4",
     "@types/node-fetch": "^2.1.1",
+    "@types/pg": "^7.4.10",
     "@types/request-promise": "^4.1.41",
     "@types/sparkpost": "^2.1.4",
     "@types/uuid": "^3.4.3",
